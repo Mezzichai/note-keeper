@@ -1,0 +1,147 @@
+.sidebar {
+  padding: 4.5rem 0 0 0;
+  background-color: brown;
+  min-width: 3.9em;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  gap: .5rem;
+  overflow: auto;
+  overflow-x: hidden;
+  transition: all 0.5s ease;
+}
+
+.open {
+  min-width: 17em;
+  padding: 4.5rem 0 0 0;
+
+}
+
+
+.open .child {
+  min-width: 92%;
+  justify-content: left;
+  
+}
+
+.child {
+  margin-left: .7rem;
+  border-radius: 2rem;
+  min-width: 2.5em;
+  max-width: 2.5rem;
+  min-height: 2.5em;
+  max-height: 2.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: left;
+  flex-direction: row;
+  transition: all 0.5s ease;
+  position: relative;
+}
+
+.icon {
+  position: absolute;
+  left: .75rem;
+}
+
+.open .catagory {
+  color: aqua;
+}
+
+.catagory {
+  max-height: 2.5rem;
+  white-space: nowrap;
+  visibility: none;
+  margin-left: 20px;
+  color: transparent;
+  transition: all 0.3s ease;
+}
+
+
+
+
+
+
+/* modal styles */
+
+
+.modal {
+  background-color: aqua;
+  z-index: 999;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  padding: .7rem;
+  overflow: none;
+  display: flex;
+  flex-direction: column;
+  gap: .7rem
+}
+
+.message {
+
+}
+
+.newLabel {
+  display: flex;
+}
+
+.modal button {
+  font-size: .7rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 1.5rem;
+  background-color: transparent;
+  min-width: 1.5rem;
+  min-height: 1.5rem;
+  padding: 0;
+  border: none;
+}
+
+.modal button:hover {
+  background-color: rgba(128, 128, 128, 0.37);
+}
+
+.modal input {
+  margin: 0 .3rem 0 .3rem;
+  width: 100%;
+  background-color: transparent;
+  color: black;
+
+}
+
+.addNewLabelBtn {
+
+}
+
+.newLabelField {
+ 
+}
+
+
+.field {
+  display: flex;
+}
+
+.confirmLabelBtn {
+  font-size: .7rem;
+  display: none;
+  border-radius: 0;
+}
+
+.showCheck {
+  display: flex;
+}
+
+.input {
+  border-bottom: 1px solid black;
+
+}
+
+
+.edit {
+  display: flex;
+}
+
+
