@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { Collection, ObjectId,} from "mongodb"; // Import MongoDB types
+import { Collection, InsertOneResult, ObjectId } from 'mongodb';
 import { db } from "../config/conn.js"
 
 import { tryCatch } from "../middleware/higherOrder.js";
@@ -12,14 +12,13 @@ interface Note {
 }
 
 interface Label {
-  _id: ObjectId;
+  _id: ObjectId | string;
   title: string;
-  notes?: Note[];
 }
 
 const getQuery = tryCatch(async (req: Request, res: Response) => {
   const {query} = req.params
-  const notes: Collection<Note> | undefined = await db?.collection("notes")
+  const notes: Collection<Note> | undefined = await db.collection("notes")
   let results;
 
   results = await notes?.find({title: query})
@@ -29,7 +28,7 @@ const getQuery = tryCatch(async (req: Request, res: Response) => {
 
 const getNote = tryCatch(async (req: Request, res: Response) => {
   const {id} = req.params
-  const notes: Collection<Note> | undefined = await db?.collection("notes")
+  const notes: Collection<Note> | undefined = await db.collection("notes")
   let results;
   
   results = await notes?.find({_id: new ObjectId(id)})
@@ -38,36 +37,61 @@ const getNote = tryCatch(async (req: Request, res: Response) => {
 })
 
 const getNotes = tryCatch(async (req: Request, res: Response) => {
-    const {label} = req.params
-    const notes: Collection<Note> | undefined = await db?.collection("notes")
-    let results;
+    const label = JSON.parse(req.params.label) as Label
+    const notes: Collection<Note> | undefined = await db.collection("notes")
+
+    let plainNotes: Note[];
+    let pinnedNotes: Note[];
     if (label) {
-      results = await notes?.find({Label: label})
+      if (label._id === "default") {
+        if (label.title === "Archive") {
+          plainNotes = await notes?.find({ isArchived: true }).limit(50).toArray();
+          pinnedNotes = []
+        } else if (label.title === "Trash") {
+          plainNotes = await notes?.find({ isTrashed: true }).limit(50).toArray();
+          pinnedNotes = []
+        } else {
+          pinnedNotes = await notes?.find({isPinned: true }).limit(50).toArray();
+          plainNotes = await notes?.find({ isArchived: false, isTrashed: false }).limit(50).toArray();
+        }
+      } else {
+        pinnedNotes = await notes?.find({ labels: { $elemMatch: { _id: label._id} }, isArchived: false, isTrashed: false }).limit(50).toArray();
+        plainNotes = await notes?.find({ labels: { $elemMatch: { _id: label._id} }, isArchived: false, isTrashed: false }).limit(50).toArray();
+      }
+      return res.send({plainNotes, pinnedNotes}).status(200)
     } else {
       throw new AppError(400, "label not found")
     }
-    results = results?.limit(50).toArray()
-    return res.send(results).status(200)
 })
+
 
 
 const postNote = tryCatch(async (req: Request, res: Response) => {
-  const {label} = req.params
+  const { label } = req.params;
 
-  const notes: Collection<Note> | undefined  = db?.collection("notes")
+  const notes: Collection<Note> | undefined = db.collection('notes');
   const newDoc = req.body;
-  newDoc.label = label
+  newDoc.labels = [];
+  newDoc.labels.push(JSON.parse(label))
   newDoc.date = new Date();
-  const result = await notes?.insertOne(newDoc)
-  return res.send(result).status(200)
-})
 
+  const result: InsertOneResult<Note> | undefined = await notes?.insertOne(newDoc);
+
+  if (result) {
+    const insertedNote: Note = {
+      ...newDoc,
+      _id: result.insertedId,
+    };
+    return res.status(201).json(insertedNote);
+  } else {
+    throw new Error('Failed to insert note');
+  }
+});
 
 const patchNote = tryCatch(async (req: Request, res: Response) => { 
   const noteId = req.params.id;
   const updatedFields = req.body
-
-  const notes: Collection<Note> | undefined= db?.collection("notes")
+  const notes: Collection<Note> | undefined = db.collection("notes")
 
   const result = await notes?.findOneAndUpdate(
     {_id: new ObjectId(noteId)},
@@ -78,39 +102,46 @@ const patchNote = tryCatch(async (req: Request, res: Response) => {
   if (result?.value) {
     return res.send(result.value).status(200)
   } else {
-    throw new Error
+    throw new AppError(400, "Could not update note")
   }
 })
 
 const deleteNote = tryCatch(async (req: Request, res: Response) => { 
   const noteId = req.params.id;
 
-  const notes: Collection<Note> | undefined = db?.collection("notes")
+  const notes: Collection<Note> | undefined = db.collection("notes")
 
   const result = await notes?.findOneAndDelete(
     {_id: new ObjectId(noteId)}
   )
-
-  console.log(result?.value)
-  return res.send(result?.value).status(200)
-
+  if (result) {
+    return res.send(result.value).status(200)
+  } else {
+    throw new AppError(400, "Could not delete note")
+  }
 })
 
 
 const getLabels = tryCatch(async (req: Request, res: Response) => {
-  const labels: Collection<Label> | undefined = await db?.collection("labels")
-  const results = await labels?.find({}).limit(50).toArray()
+  const labels: Collection<Label> | undefined = await db.collection("labels")
+  const results = await labels.find({}).limit(50).toArray()
   return res.send(results).status(200)
 })
 
 const postLabel = tryCatch(async (req: Request, res: Response) => {
-    const labels: Collection<Label> | undefined = db?.collection("labels")
+    const labels: Collection<Label> | undefined = db.collection("labels")
     const newDoc = req.body
-    console.log(newDoc)
-    newDoc.date = new Date()
   
-    const result = await labels?.insertOne(newDoc)
-    return res.send(result).status(204)
+    const result: InsertOneResult<Label> | undefined = await labels?.insertOne(newDoc);
+    if (result) {
+      const insertedLabel: Label = {
+        ...newDoc,
+        _id: result.insertedId,
+      };
+      return res.status(200).json(insertedLabel)
+    } else {
+      throw new Error('Failed to insert Label');
+    }
 })
 
 
@@ -118,7 +149,7 @@ const patchLabel = tryCatch(async (req: Request, res: Response) => {
   const labelId = req.params.id
   const updatedFields = req.body
 
-  const labels: Collection<Label> | undefined = db?.collection("labels")
+  const labels: Collection<Label> | undefined = db.collection("labels")
 
   const result = await labels?.findOneAndUpdate(
     {_id: new ObjectId(labelId)},
@@ -131,7 +162,7 @@ const patchLabel = tryCatch(async (req: Request, res: Response) => {
 const deleteLabel = async (req: Request, res: Response) => {
   const labelId = req.params.id
 
-  const labels: Collection<Label> | undefined = db?.collection("labels")
+  const labels: Collection<Label> | undefined = db.collection("labels")
 
   const result = await labels?.findOneAndDelete(
     {_id: new ObjectId(labelId)}

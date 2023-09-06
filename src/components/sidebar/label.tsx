@@ -1,4 +1,4 @@
-import React, {useState, useRef} from 'react'
+import React, {useState, useRef, useEffect} from 'react'
 import sidebarStyles from './sidebarStyles.module.css'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faTag, faTrash, faCheck, faPencil } from '@fortawesome/free-solid-svg-icons'
@@ -9,68 +9,91 @@ interface Props {
   id: string;
   newLabelState: boolean;
   setNewLabelState: React.Dispatch<React.SetStateAction<boolean>>;
-  getLabels: () => Promise<void>
+  getLabels: () => Promise<void>;
+  handleDeletionModal: (title: string, id: string) => void;
+  deletionModal: boolean
 }
 
-interface LabelProps {
-  id: string;
-  title: string;
-}
 
-const Label: React.FC<Props> = ({title, id, newLabelState, setNewLabelState, getLabels}) => {
-  const [newTitle, setNewTitle] = useState<string>(title)
+
+const Label: React.FC<Props> = ({title, id, newLabelState, setNewLabelState, getLabels, handleDeletionModal, deletionModal}) => {
+  const [originalTitle, setOriginalTitle] = useState<string>(title)
+  const [newTitle, setNewTitle] = useState<string>("")
+  const [hasSubmitted, setHasSubmitted] = useState<boolean>(false)
+
   const [tagHoverState, setTagHoverState] = useState<boolean>(false)
   const [existingLabelFocusState, setExistingLabelFocusState] = useState<boolean>(false)
-  const isChangingLabel = useRef(false)
+
+
+
+
+  const divRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (divRef.current && !divRef.current.contains(event.target as Node)) {
+        // The click is outside the div
+        handleBlur()
+      }
+    };
+    
+    document.addEventListener('click', handleClickOutside);
+
+    return () => {
+      document.removeEventListener('click', handleClickOutside);
+    };
+  }, []);
+    
+
+
   const handleFocusAndHover = (setter: React.Dispatch<React.SetStateAction<boolean>>, desiredState: boolean) => {
     setter(desiredState)
   }
-
   const handleTrashClick = () => {
     newLabelState ? setNewLabelState(false) : null;
+  
     if (existingLabelFocusState) {
-      setExistingLabelFocusState(false);
-    } else {
-      // a simple modal that asks whether you want to del the label and the associated notes
+      handleBlur()
+    } else if (!deletionModal) {
+      handleDeletionModal(title, id)
+      //will the title be current?
     }
   };
 
   const handlePatchLabel = async () => {
-    isChangingLabel.current = true 
-    //find out if there is a way to rerender only one title
-
-    //handle change for individual then, call a get for this single label and call a drilled handler to do the same for the sidebar, 
-    // use the || short circuiting to check if the individual, more current, title is present
     newLabelState ? setNewLabelState(false) : null
     if (!existingLabelFocusState) {
       setExistingLabelFocusState(true)
-    } else {
-      const response = await api.patch<LabelProps>(`./notes/label/${id}`, JSON.stringify({title: newTitle}), {
+    } else if (!deletionModal) {
+      await api.patch(`./notes/label/${id}`, JSON.stringify({title: newTitle}), {
         headers: { "Content-Type": "application/json"},
         withCredentials: true
         }
       )
-        console.log(response)
-        getLabels()
-    }
-    isChangingLabel.current = false
-  }
-
-//must be timed out so handletrashclick has a chance to clear titles 
-  const handleBlur = () => {
-    setTimeout(() => {
-      if (!isChangingLabel.current) {
-        setExistingLabelFocusState(false);
-        setNewTitle(title);
+      if (newTitle === "") {
+        setNewTitle(originalTitle)
       }
-  }, 100);
+      setOriginalTitle(newTitle);
+      getLabels()
+      setHasSubmitted(true)
+    }
   }
-
-
-
-
+//have the newtitle be a used if it is truthy otherwise use the originalTitle (short circuit)
+  const handleBlur = () => {
+    setExistingLabelFocusState(false);
+    if (!hasSubmitted) {
+      setNewTitle("");
+    } else {
+      setNewTitle("")
+      setHasSubmitted(false)
+    }
+  }
+// the only issue is the short circuiting
+  
   return (
-  <div className={sidebarStyles.field} onBlur={()=>{handleBlur()}}>
+  
+  <div className={sidebarStyles.field} ref={divRef}>
+
     <button className={sidebarStyles.deleteLabel} onClick={()=> handleTrashClick()} onMouseOver={()=>(handleFocusAndHover(setTagHoverState, true))} onMouseLeave={()=>(handleFocusAndHover(setTagHoverState, false))}>
       <FontAwesomeIcon icon={tagHoverState || existingLabelFocusState ? faTrash : faTag} />
     </button>
@@ -79,12 +102,14 @@ const Label: React.FC<Props> = ({title, id, newLabelState, setNewLabelState, get
     onMouseLeave={()=>handleFocusAndHover(setTagHoverState, false)} 
     onFocus={()=>handleFocusAndHover(setExistingLabelFocusState, true)}>
       <input 
-        value={newTitle} 
+        value={newTitle || originalTitle} 
         className={`${sidebarStyles.label} ${existingLabelFocusState ? sidebarStyles.input : null}`} 
         onClick={() => newLabelState ? setNewLabelState(false) : null} 
-        onChange={(e)=> setNewTitle(e.target.value)}/>
+        onChange={(e)=> {
+          setNewTitle(e.target.value)
+        }}/>
     </div>
-    <button className={sidebarStyles.renameLabel} onClick={() => handlePatchLabel()}  onMouseDown={(e) => e.preventDefault()}><FontAwesomeIcon icon={existingLabelFocusState ? faCheck : faPencil}/></button>
+    <button className={sidebarStyles.renameLabel} onClick={() => handlePatchLabel()}><FontAwesomeIcon icon={existingLabelFocusState ? faCheck : faPencil}/></button>
   </div>
   )
 }

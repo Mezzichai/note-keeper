@@ -8,12 +8,12 @@ console.log(connectionString)
 // };
 
 let client: MongoClient | undefined;
-let db: Db | undefined;
+let db: Db;
 
 const connectToDatabase = async () => {
   try {
     client = await MongoClient.connect(connectionString);
-    db = client.db();
+    db = await client.db();
     console.log("Connected to MongoDB successfully!");
   } catch (error) {
     console.error("Error connecting to MongoDB:", error);

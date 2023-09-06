@@ -1,0 +1,55 @@
+.container {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  width: 100%;
+  background-color: red;
+  padding: 4.5rem .5rem 0 3.7rem
+}
+
+.newNote {
+  border-radius: 5px;
+  max-width: 27em;
+  min-width: 15em;
+  width: 100%;
+  display: flex;
+  background-color: rgb(29, 28, 29);
+  transition: all 0.4s ease;
+}
+
+.newNoteActive {
+  display: flex;
+  flex-direction: column;
+  top: 50%;
+}
+
+
+.newNoteInactive {
+
+}
+
+.bodyInput {
+  display: flex;
+  align-items: center;
+  min-height: 2.5rem;
+  max-height: 1em;
+  padding: .5rem 0 .5rem .5rem;
+  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  position: relative;
+  line-height: 1.5;
+  font-weight: 400;
+  font-size: 13px;
+  height: auto;
+  resize: none;
+  overflow-y:auto;
+}
+
+.newNoteActive .bodyInput {
+  max-height: 24.5em;
+}
+
+
+.titleInput {
+  height: 2.5rem;
+  padding: .5rem .5rem .5rem .5rem;
+}

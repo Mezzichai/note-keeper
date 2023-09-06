@@ -1,31 +1,30 @@
 .sidebar {
-  padding: 4.5rem 0 0 0;
+  position: fixed;
+  padding: 4rem .3rem 0 .3rem;
   background-color: brown;
-  min-width: 3.9em;
+  min-width: 3.2em;
   height: 100vh;
   display: flex;
   flex-direction: column;
   gap: .5rem;
-  overflow: auto;
+  overflow: hidden;
   overflow-x: hidden;
-  transition: all 0.5s ease;
+  transition: all 0.4s ease;
+  z-index: 998;
 }
 
 .open {
-  min-width: 17em;
-  padding: 4.5rem 0 0 0;
-
+  min-width: 15em;
+  /* padding: 4.5rem .5rem 0 .5rem; */
 }
 
 
 .open .child {
-  min-width: 92%;
+  min-width: 100%;
   justify-content: left;
-  
 }
 
 .child {
-  margin-left: .7rem;
   border-radius: 2rem;
   min-width: 2.5em;
   max-width: 2.5rem;
@@ -35,18 +34,28 @@
   align-items: center;
   justify-content: left;
   flex-direction: row;
-  transition: all 0.5s ease;
+  transition: all .4s ease;
   position: relative;
+  padding: 0.6em 1em;
+  font-size: 1em;
 }
 
+.child:hover {
+  background-color: gray;
+}
+
+
 .icon {
+  min-width: 16px;
   position: absolute;
-  left: .75rem;
+  left: 0.74rem
 }
 
 .open .catagory {
   color: aqua;
 }
+
+
 
 .catagory {
   max-height: 2.5rem;
@@ -54,9 +63,13 @@
   visibility: none;
   margin-left: 20px;
   color: transparent;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease-in-out;
 }
 
+.activeLabel {
+  background-color: gray;
+
+}
 
 
 
@@ -76,7 +89,9 @@
   overflow: none;
   display: flex;
   flex-direction: column;
-  gap: .7rem
+  gap: .7rem;
+  min-width: 10%;
+  max-width: 20rem
 }
 
 .message {
@@ -97,6 +112,7 @@
   min-height: 1.5rem;
   padding: 0;
   border: none;
+  
 }
 
 .modal button:hover {
@@ -122,6 +138,7 @@
 
 .field {
   display: flex;
+  justify-content: space-between;
 }
 
 .confirmLabelBtn {
@@ -142,6 +159,46 @@
 
 .edit {
   display: flex;
+}
+
+
+
+/* minimodal */
+
+.confirmModal {
+  background-color: rgba(255, 145, 0, 0.71);
+  backdrop-filter: blur(5px);
+  z-index: 999;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  padding: .7rem;
+  overflow: none;
+  display: flex;
+  flex-direction: column;
+  gap: .7rem;
+  justify-content: center;
+  text-align: center;
+  width: 90%
+}
+
+.deleteModalBtns {
+  display: flex;
+  justify-content: space-around;
+}
+
+
+.confirmModal button {
+  width: 20%
+}
+
+.confirmModal .confirm {
+  background-color: rgb(17, 204, 27);
+}
+
+.confirmModal .deny {
+  background-color: rgb(204, 17, 17);
 }
 
 
