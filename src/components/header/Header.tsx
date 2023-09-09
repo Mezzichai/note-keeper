@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useContext } from 'react';
+import React, { useEffect, useState, useContext, useRef } from 'react';
 import headerStyles from "./headerStyles.module.css";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faGear, faBars, faUser, faMagnifyingGlass, faRotateRight, faMapPin, faEllipsisVertical, faArchive, faX, faTrash, faTrashRestore, faUndo } from '@fortawesome/free-solid-svg-icons';
@@ -18,28 +18,35 @@ interface Props {
 }
 
 const Header: React.FC<Props> = ({ isOpen, setIsOpen, query, setQuery }) => {
-  const [inputFocus, setInputFocus] = useState<boolean>(false)
-  const {currentLabel, setNotes, setMultiSelectMode, multiSelectMode, selectedNotes, setSelectedNotes, notes} = useContext(Context)
+  const {currentLabel, setNotes, setMultiSelectMode, multiSelectMode, selectedNotes, setSelectedNotes, notes, setCurrentLabel, setLoading} = useContext(Context)
   const [modalState, setModalState] = useState<boolean>(false)
-
+  const inputRef = useRef<HTMLInputElement | null>(null);
   const handleQuery = async () => {
-    const response = await api.get(`./notes/query/${currentLabel}}/${query}`)
-    setNotes(response.data)
+    const response = await api.get(`./notes/search/query?query=${query}`)
+    console.log(response)
+    setNotes(() => ({ plainNotes: response.data, pinnedNotes: []}));
+    setLoading(false)
   }
 
   useEffect(() => {
     if (query) {
+      setCurrentLabel({title: "Query", _id: "default"})
       handleQuery()
     }
   }, [query])
 
-  const handleCenterFocus = () => {
-    setInputFocus(true);
-  };
+  useEffect(() => {
+    if (query && currentLabel.title !== "Query") {
+      setQuery("")
+    }
+  }, [currentLabel])
 
-  const handleCenterBlur = () => {
-    setInputFocus(false);
-  };
+  const handleFocusInput = () => {
+    if (inputRef.current) {
+      inputRef.current.focus();
+    }
+  }
+  
 
   const handleMultiSelectCancel = () => {
     setMultiSelectMode(false)
@@ -62,28 +69,49 @@ const Header: React.FC<Props> = ({ isOpen, setIsOpen, query, setQuery }) => {
             pinnedNotes: prevNotes.pinnedNotes.filter((prevNote: NoteType) => prevNote._id !== note._id),
           }
         });
+        api.patch(
+          `./notes/${note._id}`,
+          JSON.stringify({ isPinned: false }),
+          {
+            headers: { "Content-Type": "application/json" },
+            withCredentials: true,
+          }
+        );
       })
     } catch (error) {
       console.log(error);
     }
   }
 
-  const handlePin = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+  const handlePin = async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     e.stopPropagation();
     try {
-      selectedNotes.forEach(async (note) => {
-        await api.patch(`./notes/${note._id}`, 
-        JSON.stringify({isPinned: true}),
-        {
-          headers: { "Content-Type": "application/json"},
-          withCredentials: true
+      const updatedNotes = await Promise.all(
+        selectedNotes.map(async (note) => {
+          let updatedNote;
+          if (!note.isPinned) {
+             updatedNote = await api.patch(
+              `./notes/${note._id}`,
+              JSON.stringify({ isPinned: true }),
+              {
+                headers: { "Content-Type": "application/json" },
+                withCredentials: true,
+              }
+            );
+          }
+          return updatedNote ? updatedNote.data : note;
         })
-      })
-      const selectedIds = selectedNotes.map(note => note._id)
+      );
+      //you MUST use the most current notes because you are SETTING the notes to these notes,
+      //and the property `ispinned` must be current because it is used
+      //in the note conponent
+      const selectedIds = updatedNotes.map(note => note._id);
+      const pinnedIds = notes.pinnedNotes.map(note => note._id);
+      const newlyPinned = updatedNotes.filter(note => !pinnedIds.includes(note._id))
       setNotes((prevNotes: notesState) => {
         return {
-          plainNotes: prevNotes.plainNotes.filter((prevNote: NoteType) => selectedIds.includes(prevNote._id)),
-          pinnedNotes: [...prevNotes.pinnedNotes, ...selectedNotes],
+          plainNotes: prevNotes.plainNotes.filter((prevNote: NoteType) => !selectedIds.includes(prevNote._id)),
+          pinnedNotes: [...prevNotes.pinnedNotes, ...newlyPinned],
         }
       });
     } catch (error) {
@@ -91,8 +119,35 @@ const Header: React.FC<Props> = ({ isOpen, setIsOpen, query, setQuery }) => {
     }
   }
 
-  const handleUnpin = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
-    e.stopPropagation()
+  const handleUnpin = async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+    e.stopPropagation();
+    try {
+      const updatedNotes = await Promise.all(
+        selectedNotes.map(async (note) => {
+          const updatedNote = await api.patch(
+              `./notes/${note._id}`,
+              JSON.stringify({ isPinned: false }),
+              {
+                headers: { "Content-Type": "application/json" },
+                withCredentials: true,
+              }
+            );
+            return updatedNote ? updatedNote.data : note;
+        })
+      );
+      //you MUST use the most current notes because you are SETTING the notes to these notes,
+      //and the property `ispinned` must be current because it is used
+      //in the note conponent
+      const selectedIds = updatedNotes.map(note => note._id);
+      setNotes((prevNotes: notesState) => {
+        return {
+          plainNotes: [...prevNotes.plainNotes, ...updatedNotes],
+          pinnedNotes: prevNotes.pinnedNotes.filter((prevNote: NoteType) => !selectedIds.includes(prevNote._id)),
+        }
+      });
+    } catch (error) {
+      console.log(error);
+    }
   }
 
   const handleTrash = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
@@ -174,23 +229,20 @@ const Header: React.FC<Props> = ({ isOpen, setIsOpen, query, setQuery }) => {
           <button onClick={() => setIsOpen(!isOpen)}>
             <FontAwesomeIcon icon={faBars} />
           </button>
-
           <div className={headerStyles.title}>Keeper++</div>
         </div>
 
         <div 
-          onFocus={handleCenterFocus}
-          onBlur={handleCenterBlur}
-          className={`${headerStyles.center} ${inputFocus ? headerStyles.focus : ""}`}>
-          <button><FontAwesomeIcon icon={faMagnifyingGlass} /></button>
+          className={headerStyles.center}>
+          <button onClick={() => handleFocusInput()}><FontAwesomeIcon icon={faMagnifyingGlass} /></button>
           <input 
+            ref={inputRef}
             placeholder='Search'
             type="text" 
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-  
           />
-          <button className={headerStyles.X}>X</button>
+          <button className={headerStyles.X} onClick={() => setQuery("")}>X</button>
         </div>
 
         <div className={headerStyles.right}>
@@ -214,18 +266,19 @@ const Header: React.FC<Props> = ({ isOpen, setIsOpen, query, setQuery }) => {
 
           <div className={headerStyles.title}>{selectedNotes.length} selected</div>
         </div>
-        {currentLabel.title !== "Trash" && currentLabel.title !== "Archive" ? (
+        {!["Trash", "Archive"].includes(currentLabel.title) ? (
           <div className={headerStyles.right}>
-            {selectedNotes.every(note => note.isPinned && note.isPinned === true) ? (
-            <button onClick={(e) => handleUnpin(e)} className={`${headerStyles.option} ${headerStyles.removePin} ${headerStyles.noteSelectBtn}`} >
-              <FontAwesomeIcon icon={faMapPin} />
-            </button>
-            ) : (
-            <button onClick={(e) => handlePin(e)} className={`${headerStyles.option} ${headerStyles.noteSelectBtn}`} >
-              <FontAwesomeIcon icon={faMapPin} />
-            </button>
-            )}
-           
+            {currentLabel.title !== "Query" ? 
+              selectedNotes.every(note => note.isPinned === true) ? (
+              <button onClick={(e) => handleUnpin(e)} className={`${headerStyles.option} ${headerStyles.removePin} ${headerStyles.noteSelectBtn}`} >
+                <FontAwesomeIcon icon={faMapPin} />
+              </button>
+              ) : (
+              <button onClick={(e) => handlePin(e)} className={`${headerStyles.option} ${headerStyles.noteSelectBtn}`} >
+                <FontAwesomeIcon icon={faMapPin} />
+              </button>
+              )
+            : null}
 
             <button onClick={(e) => handleArchive(e)} className={`${headerStyles.option} ${headerStyles.noteSelectBtn}`}>
               <FontAwesomeIcon icon={faArchive} />

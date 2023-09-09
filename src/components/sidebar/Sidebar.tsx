@@ -1,4 +1,4 @@
-import React, {useState, useEffect, useContext} from 'react'
+import React, {useState, useEffect, useContext, useRef} from 'react'
 import sidebarStyles from './sidebarStyles.module.css'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faTag, faTrash, faEdit, faArchive, faLightbulb} from '@fortawesome/free-solid-svg-icons'
@@ -20,6 +20,7 @@ const Sidebar: React.FC<Props> = ({ isOpen, setCurrentLabel }) => {
   const [modalState, setModalState] = useState<boolean>(false)
   const [loading, setLoading] = useState<boolean>(true)
   const {currentLabel, setLabels, labels} = useContext(Context)
+  const hoverTimeoutRef = useRef<number | null>(null);
 
 
   
@@ -27,16 +28,14 @@ const Sidebar: React.FC<Props> = ({ isOpen, setCurrentLabel }) => {
     try {
       const response = await api.get("./notes/label");
       setLabels(response.data);
+      console.log(response.data)
+      setLoading(false)
     } catch (error) {
       console.log("Error fetching labels:", error);
     }
   };
 
-  useEffect(() => {
-    if (labels.length)
-    setLoading(false)
-  }, [labels])
-  
+
   // const handleNewLabel = async (label: LabelProp) => {
   //   try {
   //     const newLabel = await api.post<LabelProp>(
@@ -54,9 +53,25 @@ const Sidebar: React.FC<Props> = ({ isOpen, setCurrentLabel }) => {
   //   }
   // };
 
+  const handleHover = () => {
+    if (!hoverTimeoutRef.current) {
+      hoverTimeoutRef.current = setTimeout(() => {
+        setIsHovering(true);
+      }, 400);
+    }
+  }
+
+  const handleUnhover = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+    e.stopPropagation();
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current);
+      hoverTimeoutRef.current = null;
+    }
+    setIsHovering(false);
+  }
+
   useEffect(() => {
     getLabels();
-  
   }, []);
 
 
@@ -76,7 +91,7 @@ const Sidebar: React.FC<Props> = ({ isOpen, setCurrentLabel }) => {
     <div>
       {modalState ? <Modal labels={labels} getLabels={getLabels} setModalState={setModalState}/> : null}
       
-      <div className={`${sidebarStyles.sidebar} ${(isOpen || isHovering) ? sidebarStyles.open : null}`} onMouseOver={()=>setIsHovering(true)} onMouseLeave={()=>setIsHovering(false)}>
+      <div className={`${sidebarStyles.sidebar} ${(isOpen || isHovering) ? sidebarStyles.open : null}`} onMouseOver={()=>handleHover()} onMouseLeave={(e)=>handleUnhover(e)}>
         <button className={`${sidebarStyles.child} ${
             currentLabel.title === "Notes" ? sidebarStyles.activeLabel : ""
           }`} onClick={() => {handleLabelSwitch({title: "Notes", _id: "default"})}}>

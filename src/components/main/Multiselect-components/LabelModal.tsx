@@ -3,6 +3,7 @@ import { Context } from '../../../context';
 import optionModalStyles from '../../header/optionModalStyles.module.css'
 import { NoteType } from '../../../interfaces';
 import { LabelType } from '../../../interfaces';
+import api from '../../../api/axios';
 
 interface Props {
   setLabelModal: React.Dispatch<React.SetStateAction<boolean>>;
@@ -12,15 +13,15 @@ interface Props {
 const LabelModal: React.FC<Props> = ({setLabelModal, note}) => {
   const {labels} = useContext(Context)
   const labelModalRef = useRef<HTMLDivElement>(null)
-  const [checkedLabels, setCheckedLabels] = useState<LabelType[]>([])
+  const [checkedLabels, setCheckedLabels] = useState<LabelType[]>([...note.labels])
+
   useEffect(() => {
-   
     const handleClickOutside = (event: MouseEvent) => {
-      // setTimeout(()=> {
+      setTimeout(()=> {
         if ((labelModalRef.current && !labelModalRef.current.contains(event.target as Node))) {
           setLabelModal(false);
         }
-      // }, 100)
+      }, 100)
     };
   
     document.addEventListener("mousedown", handleClickOutside);
@@ -31,7 +32,10 @@ const LabelModal: React.FC<Props> = ({setLabelModal, note}) => {
   }, [setLabelModal, note.labels]);
 
 
-  const handleLabelChange = (label: LabelType) => {
+
+
+  const handleLabelChange = (label: LabelType, e: React.ChangeEvent<HTMLInputElement> | React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+    e.stopPropagation()
     setCheckedLabels(prevCheckedLabels => {
       if (prevCheckedLabels.some(checkedLabel => checkedLabel._id === label._id)) {
         return prevCheckedLabels.filter(checkedLabel => checkedLabel._id !== label._id)
@@ -40,6 +44,23 @@ const LabelModal: React.FC<Props> = ({setLabelModal, note}) => {
       }
     })
   }
+  
+  useEffect(() => {
+    console.log(checkedLabels)
+    const handleLabelsUpdate = async () => {
+      await api.patch(
+        `./notes/${note._id}`,
+        JSON.stringify({ labels: [...checkedLabels] }),
+        {
+          headers: { 'Content-Type': 'application/json' },
+          withCredentials: true,
+        }
+      );
+    }
+    handleLabelsUpdate()
+    //direct state mutation 
+    note.labels = [...checkedLabels]
+  }, [checkedLabels, note._id])
 
   return (
     <div ref={labelModalRef} className={optionModalStyles.labelModal}>
@@ -47,11 +68,12 @@ const LabelModal: React.FC<Props> = ({setLabelModal, note}) => {
       
       {labels.map(label=> {
         return (
-          <div key={label._id || label.title} className={optionModalStyles.label}>
+          <div key={label._id || label.title} className={optionModalStyles.label} onClick={(e) => handleLabelChange(label, e)}>
              <input
               type="checkbox"
-              checked={note.labels.some(noteLabel => noteLabel._id === label._id)}
-              onChange={() => handleLabelChange(label)}
+              value={label.title}
+              checked={checkedLabels.some(checkedLabels => checkedLabels._id === label._id)}
+              readOnly
             />
             <span>{label.title}</span>
           </div>

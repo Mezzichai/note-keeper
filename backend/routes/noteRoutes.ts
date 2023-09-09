@@ -12,10 +12,10 @@ router.delete("/label/:id", deleteLabel);
 // Getting notes
 router.get("/:label", getNotes);
 router.get("/note/:label/:id", getNote);
-router.get("/query/:label/:search", getQuery);
+router.get("/search/query", getQuery);
 
 // Mutating the notes
-router.post("/:label/newnote", postNote);
+router.post("/newnote", postNote);
 router.patch("/:id", patchNote);
 router.delete("/:id", deleteNote);
 

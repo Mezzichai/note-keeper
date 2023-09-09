@@ -27,35 +27,34 @@ const App: React.FC = () => {
 
 
   useEffect(() => {
-    const getNotes = async () => {
-      try {
-        const response = await api.get(`./notes/${JSON.stringify(currentLabel)}`);
-        console.log(response)
-        setNotes(() => ({ plainNotes: response.data.plainNotes, pinnedNotes: response.data.pinnedNotes }));
-        setLoading(false)
-    } catch (error) {
-        console.error('Error fetching notes:', error);
-      }
-    };
-    getNotes()
+    if (currentLabel.title !== "Query") {
+      const getNotes = async () => {
+        try {
+          const response = await api.get(`./notes/${JSON.stringify(currentLabel)}`);
+          setNotes(() => ({ plainNotes: response.data.plainNotes, pinnedNotes: response.data.pinnedNotes }));
+          setLoading(false)
+      } catch (error) {
+          console.error('Error fetching notes:', error);
+        }
+      };
+      getNotes()
+    }
   }, [currentLabel]);
 
-
-  useEffect(() => {
-   console.log(notes)
-  }, [notes]);
 
   const context = {
     notes: notes,
     setNotes: setNotes,
     currentLabel: currentLabel,
+    setCurrentLabel: setCurrentLabel,
     selectedNotes: selectedNotes,
     setSelectedNotes: setSelectedNotes,
     multiSelectMode: multiSelectMode,
     setMultiSelectMode: setMultiSelectMode,
     labels: labels,
     setLabels: setLabels,
-    loading: loading
+    loading: loading,
+    setLoading: setLoading
   }
 
   return (
@@ -64,7 +63,7 @@ const App: React.FC = () => {
         <Header isOpen={isOpen} setIsOpen={setIsOpen} query={query} setQuery={setQuery}/>
         <div className="container">
           <Sidebar isOpen={isOpen} setCurrentLabel={setCurrentLabel} />
-          <Notes notes={notes}/>
+          <Notes notes={notes} />
         </div>
       </Context.Provider>
     </>

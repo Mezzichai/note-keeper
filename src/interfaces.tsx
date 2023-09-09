@@ -9,9 +9,9 @@ export interface NoteType {
   title?: string;
   body?: string;
   labels: LabelType[];
-  isPinned?: boolean
-  isTrashed?: boolean
-  isArchived?: boolean
+  isPinned: boolean;
+  isTrashed: boolean;
+  isArchived: boolean
 }
 
 

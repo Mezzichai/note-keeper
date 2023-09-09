@@ -40,12 +40,10 @@ header {
   justify-content: center;
   background-color: rgb(105, 102, 102);
   border-radius: 5px;
-  min-width: 10%
+  min-width: 40%
 }
 
-.focus {
-  background-color: rgb(68, 65, 65);
-}
+
 
 .center input {
   width: 100%;
@@ -92,6 +90,7 @@ header {
 
 
 
+
 @media (max-width: 700px) { 
   .right {
     display: flex;
@@ -118,9 +117,3 @@ header {
 } 
 
 
-@media (max-width: 440px) { 
-.X {
-  display: none;
-}
-
-} 

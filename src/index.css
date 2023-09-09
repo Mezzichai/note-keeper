@@ -88,9 +88,9 @@ textarea {
   display: -ms-flexbox; /* Not needed if autoprefixing */
   display: flex;
   width: auto;
-  margin-top: 1em;
+  margin-top: .7em;
   width: 100%;
-  gap: 15px;
+  gap: .7em;
 }
 .my-masonry-grid_column {
   background-clip: padding-box;
@@ -98,7 +98,7 @@ textarea {
 
 .my-masonry-grid_column > div { /* change div to reference your elements you put in <Masonry> */
   background: grey;
-  margin-bottom: 15px;
+  margin-bottom: .7em;
 
   display: flex;
   align-items: left;

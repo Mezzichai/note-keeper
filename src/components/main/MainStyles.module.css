@@ -4,10 +4,14 @@
   flex-direction: column;
   width: 100%;
   background-color: red;
-  padding: 4.5rem .5rem 0 3.7rem
+  padding: 3.35rem .5rem 0 3.7rem
 }
 
+.noNotes {
+  margin-top: 1rem;
+}
 .newNote {
+  margin-top: .7em;
   border-radius: 5px;
   max-width: 27em;
   min-width: 15em;
@@ -53,3 +57,4 @@
   height: 2.5rem;
   padding: .5rem .5rem .5rem .5rem;
 }
+

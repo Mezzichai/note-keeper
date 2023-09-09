@@ -7,7 +7,6 @@ import api from '../../api/axios';
 import Label from './label';
 import DeleteModal from './deleteModal';
 
-import outsideClick from '../../hooks/outsideClick';
 import { LabelType } from '../../interfaces';
 
 interface Props {
@@ -39,7 +38,18 @@ const Modal: React.FC<Props> = ({ labels, getLabels, setModalState}) => {
   const divRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    outsideClick(divRef, setModalState, false)
+    const handleClickOutside = (event: MouseEvent) => {
+      setTimeout(()=> {
+        if (divRef.current && !divRef.current.contains(event.target as Node)) {
+          setModalState(false)
+        }
+      }, 100)
+    };
+  
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
   }, [setModalState]);
 
 

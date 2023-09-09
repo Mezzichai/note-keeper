@@ -68,21 +68,20 @@ const NoteModal: React.FC<Props> = ({setNoteState, noteState, note}) => {
 
 
   useEffect(() => {
-    //this is getting run instantly
-    const handleClickOutside = (event: MouseEvent) => {
-      if (divRef.current && !divRef.current.contains(event.target as Node)) {
-        handleBlur();
-      }
-    };
+      const handleClickOutside = (event: MouseEvent) => {
+        setTimeout(()=> {
+          if (divRef.current && !divRef.current.contains(event.target as Node)) {
+            handleBlur();
+          }
+        }, 100)
+      };
   
     if (noteState) {
         document.addEventListener("mousedown", handleClickOutside);
     } 
-   
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-    
   }, [title, body]);
 
   

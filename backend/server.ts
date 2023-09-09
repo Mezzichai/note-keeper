@@ -12,7 +12,7 @@ import { credentials } from "./middleware/credentials.js";
 import { corsOptions } from "./config/corsOptions.js";
 
 
-async() => {
+async function startServer() {
   const port = process.env.PORT
   await connectToDatabase()
   const app: Express = express()
@@ -42,3 +42,4 @@ async() => {
   })
 }
 
+startServer()

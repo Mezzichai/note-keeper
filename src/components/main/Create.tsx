@@ -24,12 +24,14 @@ const Create: React.FC = () => {
   const [newNoteState, setNewNoteState] = useState<boolean>(false)
 
   const postNote = async () => {
-    return await api.post(`./notes/${JSON.stringify(currentLabel)}/newnote`, 
+    return await api.post(`./notes/newnote`, 
     JSON.stringify({
       title: title,
       body: body,
       isTrashed: false,
-      isArchived: false
+      isArchived: false,
+      isPinned: false,
+      labels: [currentLabel]
     }), {
       headers: {"Content-Type": "application/json"},
       withCredentials: true

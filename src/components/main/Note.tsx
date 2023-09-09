@@ -10,7 +10,6 @@ import api from '../../api/axios';
 import UseUpdateNoteStatus from '../../hooks/HandleTrashAndArchive';
 import { NoteType, notesState } from '../../interfaces';
 
-
 interface Props {
   note: NoteType;
 }
@@ -24,8 +23,6 @@ const Note: React.FC<Props> = ({ note }) => {
   const optionRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null)
 
-  const [pinned, setPinned] = useState<boolean>(note.isPinned || false)
-
   useLayoutEffect(() => {
     if (textareaRef.current) {
       // Calculate the scroll height of the textarea content
@@ -37,7 +34,6 @@ const Note: React.FC<Props> = ({ note }) => {
 
 
   const handleFocus = () => {
-
     setNoteState(true);
   };
 
@@ -59,49 +55,58 @@ const Note: React.FC<Props> = ({ note }) => {
     } 
   }
 
-  const handlePinClick = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+  const handlePinClick = async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     e.stopPropagation();
-    console.log("pin click")
-    api.patch(`./notes/${note._id}`, 
-    JSON.stringify({isPinned: true,}),
-    {
-      headers: { "Content-Type": "application/json"},
-      withCredentials: true
-    })
+    try {
+      const updatedNote = await api.patch(
+        `./notes/${note._id}`,
+        JSON.stringify({ isPinned: true }),
+        {
+          headers: { 'Content-Type': 'application/json' },
+          withCredentials: true,
+        }
+      );
 
-    note.isPinned = true;
+      setNotes((prevNotes: notesState) => {
+        console.log(prevNotes, updatedNote.data)
 
-    setNotes((prevNotes: notesState) => {
-      return {
-        plainNotes: prevNotes.plainNotes.filter((prevNote: NoteType) => prevNote._id !== note._id),
-        pinnedNotes: [...prevNotes.pinnedNotes, note],
-      }
-    });
-    setPinned(true)
-  }
+        return {
+          plainNotes: prevNotes.plainNotes.filter(
+            (prevNote: NoteType) => prevNote._id !== note._id
+          ),
+          pinnedNotes: [...prevNotes.pinnedNotes, updatedNote.data],
+        };
+      });
+    
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
-  const handleRemovePin = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+  const handleRemovePin = async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     e.stopPropagation();
-    console.log("unpin click")
-
-    api.patch(`./notes/${note._id}`, 
-    JSON.stringify({isPinned: false,}),
-    {
-      headers: { "Content-Type": "application/json"},
-      withCredentials: true
-    })
-
-    note.isPinned = false;
-
-    setNotes((prevNotes: notesState) => {
-      return {
-        plainNotes: [...prevNotes.pinnedNotes, note],
-        pinnedNotes: prevNotes.plainNotes.filter((prevNote: NoteType) => prevNote._id !== note._id),
-      }
-    });
-    setPinned(false)
-
-  }
+    try {
+      const updatedNote = await api.patch(
+        `./notes/${note._id}`,
+        JSON.stringify({ isPinned: false }),
+        {
+          headers: { 'Content-Type': 'application/json' },
+          withCredentials: true,
+        }
+      );
+    // Ensure the note's isPinned property is correctly updated
+      setNotes((prevNotes: notesState) => {
+        return {
+          plainNotes: [...prevNotes.plainNotes, updatedNote.data],
+          pinnedNotes: prevNotes.pinnedNotes.filter(
+            (prevNote: NoteType) => prevNote._id !== note._id
+          ),
+        };
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   const handleArchive = async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     try {
@@ -118,13 +123,20 @@ const Note: React.FC<Props> = ({ note }) => {
           pinnedNotes: prevNotes.pinnedNotes.filter((prevNote: NoteType) => prevNote._id !== note._id),
         }
       });
+      await api.patch(
+        `./notes/${note._id}`,
+        JSON.stringify({ isPinned: false }),
+        {
+          headers: { 'Content-Type': 'application/json' },
+          withCredentials: true,
+        }
+      );
     } catch (error) {
       console.log(error);
     }
   }
 
   const handleRestore = async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
-  
     try {
       const updateNoteStatusArgs = {
         e: e,
@@ -145,8 +157,9 @@ const Note: React.FC<Props> = ({ note }) => {
   }
 
   const handleDelete = async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
-    e.stopPropagation()
     try {
+      e.stopPropagation()
+
       await api.delete(`./notes/${note._id}`);
       setNotes((prevNotes: notesState) => {
         return {
@@ -164,6 +177,35 @@ const Note: React.FC<Props> = ({ note }) => {
       setNoteHoverState(false)
     } 
   }
+
+  const handleTrash = async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+    try {
+        const updateNoteStatusArgs = {
+          e: e,
+          shouldBeArchived: false,
+          shouldBeTrashed: true,
+          note: note
+        }
+        await UseUpdateNoteStatus(updateNoteStatusArgs);
+        setNotes(prevNotes => {
+          return {
+            plainNotes: prevNotes.plainNotes.filter(prevNote => note._id !== prevNote._id),
+            pinnedNotes: prevNotes.pinnedNotes.filter(prevNote => note._id !== prevNote._id),
+          }
+        });
+        await api.patch(
+          `./notes/${note._id}`,
+          JSON.stringify({ isPinned: false }),
+          {
+            headers: { 'Content-Type': 'application/json' },
+            withCredentials: true,
+          }
+        );
+    } catch (error) {
+      console.log(error);
+    }
+  }
+  
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -198,13 +240,14 @@ const Note: React.FC<Props> = ({ note }) => {
             </button>
           </div>
         ) : null}
-        {pinned ? (
-          <div className={NoteStyles.pin} >
-            <button className={`${NoteStyles.options} ${NoteStyles.removePin}`} onClick={(e)=>handleRemovePin(e)}>
+
+        {note.isPinned && !["Trash", "Archive", "Query"].includes(currentLabel.title) ? (
+          <div className={NoteStyles.pin}>
+            <button className={NoteStyles.options} id={NoteStyles.removePin} onClick={(e)=>handleRemovePin(e)}>
               <FontAwesomeIcon icon={faMapPin} />
             </button>
           </div>
-        ) : noteHoverState ? (
+        ) : noteHoverState && !["Trash", "Archive", "Query"].includes(currentLabel.title) ? (
           <div className={NoteStyles.pin}>
             <button className={NoteStyles.options} onClick={(e)=>handlePinClick(e)}>
               <FontAwesomeIcon icon={faMapPin} />
@@ -230,7 +273,7 @@ const Note: React.FC<Props> = ({ note }) => {
         {optionsModalState ? (
           <OptionsModal notes={[note]} setOptionsModal={setOptionsModal} optionRef={optionRef} />
         ) : null}
-        {noteHoverState && currentLabel.title !== "Trash" ? (
+        {noteHoverState && !["Trash", "Archive"].includes(currentLabel.title) ? (
           <div className={NoteStyles.tools} ref={optionRef}>
              <button className={NoteStyles.options} onClick={(e)=>handleArchive(e)}>
               <FontAwesomeIcon icon={faArchive} />
@@ -256,7 +299,7 @@ const Note: React.FC<Props> = ({ note }) => {
           <button className={NoteStyles.options} onClick={(e)=>handleRestore(e)}>
             <FontAwesomeIcon icon={faUndo} />
           </button>
-          <button className={NoteStyles.options} onClick={(e)=>handleDelete(e)}>
+          <button className={NoteStyles.options} onClick={(e)=>handleTrash(e)}>
             <FontAwesomeIcon icon={faTrash} />
           </button>
         </div>

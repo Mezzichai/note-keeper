@@ -16,6 +16,7 @@ interface Props {
 
 
 const Notes: React.FC<Props> = ({ notes }) => {
+  console.log('Notes component is rendering with notes:', notes);
 
   const {currentLabel, loading} = useContext(Context)
   
@@ -37,22 +38,24 @@ const Notes: React.FC<Props> = ({ notes }) => {
     return <div>Loading...</div>;
   }
 
-  return !notes.plainNotes && !notes.pinnedNotes ? (
-    <div>No notes available</div>
-    ) : (
+  return (!notes.plainNotes && !notes.pinnedNotes) || (notes.plainNotes.length === 0 && ["Query", "Trash", "Archive"].includes(currentLabel.title)) ? (
     <div className={`${MainStyles.container}`}>
-      {currentLabel.title !== "Trash" && currentLabel.title !== "Archive" ? (<Create />) : null}
+      <div className={MainStyles.noNotes}>No notes found!</div>
+    </div>
+    ) : (
+    <div className={MainStyles.container}>
+      {!["Trash", "Archive", "Query"].includes(currentLabel.title) ? (<Create />) : null}
       {/* className={NoteStyles.notesContainer} */}
       <Masonry   
       breakpointCols={breakpoints}
       className="my-masonry-grid"
       columnClassName="my-masonry-grid_column">
 
-        {notes.pinnedNotes.map((note, index) => (
-         <Note key={index} note={note} />
+        {notes.pinnedNotes.map((note) => (
+         <Note key={note._id} note={note} />
         ))}
-        {notes.plainNotes.map((note, index) => (
-         <Note key={index} note={note} />
+        {notes.plainNotes.map((note) => (
+         <Note key={note._id} note={note} />
         ))}
       </Masonry>
     </div>

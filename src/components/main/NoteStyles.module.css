@@ -26,8 +26,6 @@
   resize: none;
   overflow: hidden;
   padding: .5rem .5rem .5rem .5rem;
-  
-
 }
 
 .modal .bodyInput {
@@ -95,6 +93,10 @@
   background-color: rgba(36, 36, 36, 0.5);
 }
 
-.removePin {
+#removePin {
   background-color: rgb(245, 67, 67);
+}
+
+#removePin:hover {
+  background-color: rgba(197, 83, 38, 0.863);
 }

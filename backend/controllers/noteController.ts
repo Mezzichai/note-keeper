@@ -17,13 +17,16 @@ interface Label {
 }
 
 const getQuery = tryCatch(async (req: Request, res: Response) => {
-  const {query} = req.params
+  const query: string = req.query.query as string
   const notes: Collection<Note> | undefined = await db.collection("notes")
-  let results;
 
-  results = await notes?.find({title: query})
-  results = results?.limit(50).toArray()
-  return res.send(results).status(200)
+  const plainNotes = await notes?.find({
+    $or: [
+      { title: { $regex: query, $options: "i" } }, // Case-insensitive search in the title
+      { body: { $regex: query, $options: "i" } },  // Case-insensitive search in the body
+    ],
+  }).limit(50).toArray()
+  return res.send(plainNotes).status(200)
 })
 
 const getNote = tryCatch(async (req: Request, res: Response) => {
@@ -39,7 +42,7 @@ const getNote = tryCatch(async (req: Request, res: Response) => {
 const getNotes = tryCatch(async (req: Request, res: Response) => {
     const label = JSON.parse(req.params.label) as Label
     const notes: Collection<Note> | undefined = await db.collection("notes")
-
+    
     let plainNotes: Note[];
     let pinnedNotes: Note[];
     if (label) {
@@ -52,11 +55,11 @@ const getNotes = tryCatch(async (req: Request, res: Response) => {
           pinnedNotes = []
         } else {
           pinnedNotes = await notes?.find({isPinned: true }).limit(50).toArray();
-          plainNotes = await notes?.find({ isArchived: false, isTrashed: false }).limit(50).toArray();
+          plainNotes = await notes?.find({ isArchived: false, isTrashed: false, isPinned: false}).limit(50).toArray();
         }
       } else {
-        pinnedNotes = await notes?.find({ labels: { $elemMatch: { _id: label._id} }, isArchived: false, isTrashed: false }).limit(50).toArray();
-        plainNotes = await notes?.find({ labels: { $elemMatch: { _id: label._id} }, isArchived: false, isTrashed: false }).limit(50).toArray();
+        pinnedNotes = await notes?.find({ labels: { $elemMatch: { _id: label._id} }, isArchived: false, isTrashed: false, isPinned: true }).limit(50).toArray();
+        plainNotes = await notes?.find({ labels: { $elemMatch: { _id: label._id} }, isArchived: false, isTrashed: false, isPinned: false }).limit(50).toArray();
       }
       return res.send({plainNotes, pinnedNotes}).status(200)
     } else {
@@ -67,12 +70,9 @@ const getNotes = tryCatch(async (req: Request, res: Response) => {
 
 
 const postNote = tryCatch(async (req: Request, res: Response) => {
-  const { label } = req.params;
 
   const notes: Collection<Note> | undefined = db.collection('notes');
   const newDoc = req.body;
-  newDoc.labels = [];
-  newDoc.labels.push(JSON.parse(label))
   newDoc.date = new Date();
 
   const result: InsertOneResult<Note> | undefined = await notes?.insertOne(newDoc);
