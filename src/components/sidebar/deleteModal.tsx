@@ -1,5 +1,5 @@
 import React, {useContext} from 'react'
-import { Context } from '../../context';
+import { Context } from '../../context/context';
 import sidebarStyles from './sidebarStyles.module.css'
 import api from '../../api/axios';
 import { LabelType } from '../../interfaces';

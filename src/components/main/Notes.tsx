@@ -3,7 +3,7 @@ import Create from './Create'
 import Note from './Note';
 import MainStyles from './MainStyles.module.css'
 import Masonry from 'react-masonry-css'
-import { Context } from '../../context';
+import { Context } from '../../context/context';
 import { notesState } from '../../interfaces';
 
 

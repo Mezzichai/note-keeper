@@ -2,7 +2,7 @@ header {
   position: fixed;
   top: 0;
   z-index: 999;
-  padding: .5em 0 .5em .0em;
+  padding: .4em 0 .4em .0em;
   background-color: aqua;
   display: flex;
   justify-content: space-between;
@@ -14,7 +14,8 @@ header {
   display: flex;
   justify-content: left;
   align-items: center;
-  width: 17%;
+  
+
 }
 
 .title {
@@ -40,28 +41,32 @@ header {
   justify-content: center;
   background-color: rgb(105, 102, 102);
   border-radius: 5px;
-  min-width: 40%
+  margin: 0 .4rem 0 .4rem
 }
 
 
 
 .center input {
-  width: 100%;
-  padding: 0;
+ min-width: 1rem
+  
 }
 
 .center button {
   background-color: transparent;
   padding: 0.6em 1em;
   font-size: 1em;
+  position: relative;
 }
 
 
 .right {
   display: flex;
-  justify-content: center;
+  align-items: center;
   gap: .3rem;
   margin-right: .4rem;
+  min-width: 123px;
+  justify-content: right;
+
 }
 
 .option {
@@ -97,6 +102,7 @@ header {
     justify-content: right;
     gap: 0rem;
     width: auto;
+    min-width: 5rem
   }
 
   .left {
@@ -111,7 +117,7 @@ header {
     justify-content: center;
     background-color: rgb(105, 102, 102);
     border-radius: 10px;
-    min-width: 2.5rem;
+    min-width: 2rem;
     width: auto;
   }
 } 

@@ -1,0 +1,54 @@
+.container {
+  position: absolute;
+  top: 3rem;
+  right: 1rem;
+  background-color: rgb(59, 58, 58);
+  padding: .5rem;
+  border-radius: 4px;
+  display: flex;
+  flex-direction: column;
+  
+  max-width: 9.5rem;
+  min-width: 9.5rem;
+  gap: 10px
+}
+
+.container button { 
+  height: 2.2rem;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column; 
+  align-items: center;
+  justify-content: center;
+  padding: .5em;
+  min-width: 5rem;
+  transition: all 0.5s ease-in-out;
+}
+
+.signOut {
+  background-color: green;
+}
+
+.signIn {
+  height: 2rem;
+  border-radius: 25px;
+  display: flex;
+  flex-direction: column; 
+  align-items: center;
+  justify-content: center;
+  padding: 1em;
+  background-color: rgb(73, 167, 73);
+  min-width: 5rem;
+  transition: all 0.5s ease-in-out;
+}
+
+.signIn:hover {
+  background-color: rgb(105, 143, 49);
+}
+
+
+
+
+
+
+

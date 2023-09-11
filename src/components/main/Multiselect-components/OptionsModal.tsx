@@ -1,7 +1,7 @@
 import React, {useRef, useEffect, useState, useContext} from 'react'
 import optionModalStyles from '../../header/optionModalStyles.module.css'
 import LabelModal from './LabelModal';
-import { Context } from '../../../context';
+import { Context } from '../../../context/context';
 import UseUpdateNoteStatus from '../../../hooks/HandleTrashAndArchive';
 import {  NoteType, } from '../../../interfaces';
 import api from '../../../api/axios';

@@ -1,5 +1,5 @@
 import React, {useRef, useEffect, useContext, useState } from 'react'
-import { Context } from '../../../context';
+import { Context } from '../../../context/context';
 import optionModalStyles from '../../header/optionModalStyles.module.css'
 import { NoteType } from '../../../interfaces';
 import { LabelType } from '../../../interfaces';

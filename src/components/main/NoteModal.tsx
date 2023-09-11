@@ -2,7 +2,7 @@ import React, {useRef, useEffect, useState, useContext, useLayoutEffect} from 'r
 import MainStyles from './MainStyles.module.css'
 import NoteStyles from './NoteStyles.module.css'
 import api from '../../api/axios';
-import { Context } from '../../context';
+import { Context } from '../../context/context';
 
 interface Label {
   _id?: string;

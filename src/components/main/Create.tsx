@@ -1,7 +1,7 @@
 import React, {useState, useRef, useEffect, useContext} from 'react'
 import MainStyles from './MainStyles.module.css'
 import api from '../../api/axios';
-import { Context } from '../../context';
+import { Context } from '../../context/context';
 
 // interface NoteProps {
 //   _id: string;

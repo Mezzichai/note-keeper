@@ -4,7 +4,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faTag, faTrash, faEdit, faArchive, faLightbulb} from '@fortawesome/free-solid-svg-icons'
 import Modal from './Modal';
 import api from '../../api/axios';
-import { Context } from '../../context';
+import { Context } from '../../context/context';
 import { LabelType } from '../../interfaces';
 
 

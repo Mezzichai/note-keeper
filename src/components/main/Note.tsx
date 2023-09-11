@@ -4,7 +4,7 @@ import MainStyles from './MainStyles.module.css'
 import NoteModal from './NoteModal';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArchive, faCheck, faEllipsisVertical, faMapPin, faTrash, faTrashRestore, faUndo } from '@fortawesome/free-solid-svg-icons';
-import { Context } from '../../context';
+import { Context } from '../../context/context';
 import OptionsModal from './Multiselect-components/OptionsModal';
 import api from '../../api/axios';
 import UseUpdateNoteStatus from '../../hooks/HandleTrashAndArchive';

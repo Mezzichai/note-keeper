@@ -1,5 +1,5 @@
 import { createContext } from "react"
-import { NoteType, LabelType, notesState } from "./interfaces";
+import { NoteType, LabelType, notesState } from "../interfaces";
 
 
 interface ContextType {
@@ -15,6 +15,8 @@ interface ContextType {
   setLabels: React.Dispatch<React.SetStateAction<LabelType[]>>;
   loading: boolean;
   setLoading: React.Dispatch<React.SetStateAction<boolean>>
+  setTheme: React.Dispatch<React.SetStateAction<string>>
+  theme: string
 }
 
 export const Context = createContext<ContextType>({} as ContextType)

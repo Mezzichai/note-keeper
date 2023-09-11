@@ -19,3 +19,8 @@ export interface notesState {
   plainNotes: NoteType[]
   pinnedNotes: NoteType[]
 }
+
+export interface userInfo {
+  username: string
+  password: string
+}

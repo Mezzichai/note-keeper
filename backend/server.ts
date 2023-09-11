@@ -4,7 +4,7 @@ dotenv.config();
 import { connectToDatabase }from "./config/conn.js";
 import bodyParser from "body-parser";
 import noteRoutes from "./routes/noteRoutes"
-
+import userRoutes from './routes/userRoutes.js'
 import { notFound } from "./middleware/notFound.js";
 import { errorHandler } from "./middleware/errorHander.js";
 import cors from 'cors'
@@ -26,7 +26,6 @@ async function startServer() {
   
   
   app.use(bodyParser.json())
-  
   app.use("/notes", noteRoutes)
   
   app.get("/", (req, res) => {

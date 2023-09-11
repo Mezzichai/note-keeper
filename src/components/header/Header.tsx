@@ -1,14 +1,15 @@
 import React, { useEffect, useState, useContext, useRef } from 'react';
 import headerStyles from "./headerStyles.module.css";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faGear, faBars, faUser, faMagnifyingGlass, faRotateRight, faMapPin, faEllipsisVertical, faArchive, faX, faTrash, faTrashRestore, faUndo } from '@fortawesome/free-solid-svg-icons';
+import { faGear, faBars, faMagnifyingGlass, faMapPin, faEllipsisVertical, faArchive, faX, faTrash, faTrashRestore, faUndo } from '@fortawesome/free-solid-svg-icons';
 import api from '../../api/axios';
-import { Context } from '../../context';
+import { Context } from '../../context/context';
 import OptionsModal from '../main/Multiselect-components/OptionsModal';
 import UseUpdateNoteStatus from '../../hooks/HandleTrashAndArchive';
 import { NoteType, notesState } from '../../interfaces';
-
-
+import SettingsModal from './SettingsModal';
+import authStyle from './settingAndAuthStyles.module.css'
+import {useAuth0} from '@auth0/auth0-react'
 
 interface Props {
   isOpen: boolean;
@@ -20,6 +21,9 @@ interface Props {
 const Header: React.FC<Props> = ({ isOpen, setIsOpen, query, setQuery }) => {
   const {currentLabel, setNotes, setMultiSelectMode, multiSelectMode, selectedNotes, setSelectedNotes, notes, setCurrentLabel, setLoading} = useContext(Context)
   const [modalState, setModalState] = useState<boolean>(false)
+  const [settingsModal, setSettingsModal] = useState<boolean>(false)
+  const { loginWithRedirect, isAuthenticated } = useAuth0();
+
   const inputRef = useRef<HTMLInputElement | null>(null);
   const handleQuery = async () => {
     const response = await api.get(`./notes/search/query?query=${query}`)
@@ -246,15 +250,19 @@ const Header: React.FC<Props> = ({ isOpen, setIsOpen, query, setQuery }) => {
         </div>
 
         <div className={headerStyles.right}>
-          <button className={headerStyles.option} id={headerStyles.arrowIcon}>
-            <FontAwesomeIcon icon={faRotateRight} />
-          </button>
-          <button className={headerStyles.option} id={headerStyles.gearIcon}>
-            <FontAwesomeIcon icon={faGear} />
-          </button>
-          <button className={headerStyles.option} id={headerStyles.userIcon}>
-            <FontAwesomeIcon icon={faUser} />
-          </button>
+          {!isAuthenticated ? (
+            <button className={authStyle.signIn} onClick={() => loginWithRedirect()}>
+              Sign In
+            </button>
+          ) : (
+          <>
+        
+            <button className={headerStyles.option} id={headerStyles.gearIcon} onClick={()=>setSettingsModal(true)}>
+              <FontAwesomeIcon icon={faGear} />
+            </button>
+            {settingsModal ? <SettingsModal setSettingsModal={setSettingsModal} /> : null}
+          </>
+          )}
         </div>
       </>
       ) : (
