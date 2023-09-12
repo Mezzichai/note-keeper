@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "start": "concurrently \"cd backend && node server\" \"vite build --host\"",
+    "start": "cd backend && node dist/server.js",
 
     "dev": "concurrently \"cd backend && nodemon server\" \"wait-on -v http://localhost:5000 && vite\"",
     "build": "tsc && vite build",
