@@ -4,6 +4,8 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "start": "concurrently \"cd backend && nodemon server\" \"vite\"",
+
     "dev": "concurrently \"cd backend && nodemon server\" \"wait-on -v http://localhost:5000 && vite\"",
     "build": "tsc && vite build",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
