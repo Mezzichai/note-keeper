@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "start": "cd backend && node dist/server.js",
+    "heroku-postbuild": "npm install && npm run build",
 
     "dev": "concurrently \"cd backend && nodemon server\" \"wait-on -v http://localhost:5000 && vite\"",
     "build": "tsc && vite build",

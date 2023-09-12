@@ -17,8 +17,8 @@ async function startServer() {
   await connectToDatabase()
   const app: Express = express()
 
-  console.log(__dirname)
-  app.use(express.static(path.resolve(__dirname, "./build")));
+
+  app.use(express.static(path.resolve("C:/Users/jack7/OneDrive/Documents/Projects/Keeper++", "./dist")));
 
   // the callback in app.get() will be invoked everytime a get req with 
   // a path "/" relative to the root site
