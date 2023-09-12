@@ -13,10 +13,6 @@ interface ContextType {
   setMultiSelectMode: React.Dispatch<React.SetStateAction<boolean>>;
   labels: LabelType[];
   setLabels: React.Dispatch<React.SetStateAction<LabelType[]>>;
-  loading: boolean;
-  setLoading: React.Dispatch<React.SetStateAction<boolean>>
-  setTheme: React.Dispatch<React.SetStateAction<string>>
-  theme: string
 }
 
 export const Context = createContext<ContextType>({} as ContextType)

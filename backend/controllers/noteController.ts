@@ -140,7 +140,7 @@ const postLabel = tryCatch(async (req: Request, res: Response) => {
       };
       return res.status(200).json(insertedLabel)
     } else {
-      throw new Error('Failed to insert Label');
+      throw new AppError(400, "Could not update label")
     }
 })
 
@@ -156,10 +156,13 @@ const patchLabel = tryCatch(async (req: Request, res: Response) => {
     {$set: updatedFields},
     {returnDocument: "after"}
   )
-  return res.send(result).status(204)
-})
+  if (result?.value) {
+    return res.send(result.value).status(200)
+  } else {
+    throw new AppError(400, "Could not update label")
+  }})
 
-const deleteLabel = async (req: Request, res: Response) => {
+const deleteLabel = tryCatch(async (req: Request, res: Response) => {
   const labelId = req.params.id
 
   const labels: Collection<Label> | undefined = db.collection("labels")
@@ -168,11 +171,13 @@ const deleteLabel = async (req: Request, res: Response) => {
     {_id: new ObjectId(labelId)}
 
   )
-  if (result?.value) {
-    console.log(result?.value)
+  if (result) {
+    console.log(result)
     return res.send(result.value).status(200)
-  } 
-}
+  } else {
+    throw new AppError(400, "Could not delete label")
+  }
+})
 
 
 

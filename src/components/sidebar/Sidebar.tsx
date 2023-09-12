@@ -20,7 +20,7 @@ const Sidebar: React.FC<Props> = ({ isOpen, setCurrentLabel }) => {
   const [modalState, setModalState] = useState<boolean>(false)
   const [loading, setLoading] = useState<boolean>(true)
   const {currentLabel, setLabels, labels} = useContext(Context)
-  const hoverTimeoutRef = useRef<number | null>(null);
+  const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
 
   

@@ -1,7 +1,7 @@
 .sidebar {
   position: fixed;
   padding: 4rem .3rem 0 .3rem;
-  background-color: brown;
+  background-color: rgb(51, 50, 50);
   min-width: 3.2em;
   height: 100vh;
   display: flex;
@@ -11,10 +11,12 @@
   overflow-x: hidden;
   transition: all 0.4s ease;
   z-index: 998;
+  border: 1px solid rgb(116, 116, 116);
+  
 }
 
 .open {
-  min-width: 15em;
+  min-width: 12em;
   /* padding: 4.5rem .5rem 0 .5rem; */
 }
 
@@ -38,6 +40,7 @@
   position: relative;
   padding: 0.6em 1em;
   font-size: 1em;
+  
 }
 
 .child:hover {
@@ -52,18 +55,24 @@
 }
 
 .open .catagory {
-  color: aqua;
+  color: rgb(255, 255, 255);
+  
 }
 
 
 
 .catagory {
   max-height: 2.5rem;
-  white-space: nowrap;
   visibility: none;
   margin-left: 20px;
   color: transparent;
   transition: all 0.2s ease-in-out;
+  max-width: 8rem;
+  
+  /* Truncate text with an ellipsis (...) */
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 .activeLabel {
@@ -78,8 +87,21 @@
 /* modal styles */
 
 
+
+.modalContainer {
+  background-color: rgba(0, 0, 0, 0.226);
+  z-index: 999;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  min-width: 100%;
+  min-height: 100%;
+}
+
 .modal {
-  background-color: aqua;
+  background-color: gray;
+  
   z-index: 999;
   position: absolute;
   top: 50%;
@@ -93,7 +115,6 @@
   min-width: 15rem;
   max-width: 15rem
 }
-
 .message {
 
 }
@@ -166,7 +187,7 @@
 /* minimodal */
 
 .confirmModal {
-  background-color: rgba(255, 145, 0, 0.71);
+  background-color: rgba(32, 32, 32, 0.71);
   backdrop-filter: blur(5px);
   z-index: 999;
   position: absolute;
@@ -194,11 +215,11 @@
 }
 
 .confirmModal .confirm {
-  background-color: rgb(17, 204, 27);
+  background-color: rgb(107, 212, 112);
 }
 
 .confirmModal .deny {
-  background-color: rgb(204, 17, 17);
+  background-color: rgb(228, 92, 92);
 }
 
 

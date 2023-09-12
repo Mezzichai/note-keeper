@@ -3,9 +3,8 @@
   line-height: 1.5;
   font-weight: 400;
 
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+  color: rgb(255, 255, 255);
+  background-color: #fffdfd;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -16,11 +15,11 @@
 
 a {
   font-weight: 500;
-  color: #646cff;
+  color: #5c5ceb;
   text-decoration: inherit;
 }
 a:hover {
-  color: #535bf2;
+  color: #ffffff;
 }
 
 body {
@@ -46,7 +45,7 @@ button {
 
   font-weight: 500;
   font-family: inherit;
-  background-color: #1a1a1a;
+  background-color: #ffffff;
   cursor: pointer;
   transition: border-color 0.25s;
 }
@@ -69,7 +68,7 @@ textarea {
 
 @media (prefers-color-scheme: light) {
   :root {
-    color: #213547;
+    color: #f5f5f5;
     background-color: #ffffff;
   }
   a:hover {
@@ -97,7 +96,7 @@ textarea {
 }
 
 .my-masonry-grid_column > div { /* change div to reference your elements you put in <Masonry> */
-  background: grey;
+  background: rgb(255, 255, 255);
   margin-bottom: .7em;
 
   display: flex;

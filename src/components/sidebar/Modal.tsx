@@ -70,7 +70,8 @@ const Modal: React.FC<Props> = ({ labels, getLabels, setModalState}) => {
   }
 
   return (
-      <div className={sidebarStyles.modal} ref={divRef}>
+      <div className={sidebarStyles.modalContainer}>
+        <div className={sidebarStyles.modal} ref={divRef}>
         {deletionModal ? (
           <DeleteModal getLabels={getLabels} title={deletionModalInfo.title} id={deletionModalInfo.id} setDeletionModal={setDeletionModal}/>
           ) : null
@@ -90,14 +91,12 @@ const Modal: React.FC<Props> = ({ labels, getLabels, setModalState}) => {
             }, 100)}
             />
           <button className={`${newLabelState ? sidebarStyles.showCheck : null} ${sidebarStyles.confirmLabelBtn}`} onClick={() => handleNewLabel()}><FontAwesomeIcon icon={faCheck}/></button>
-        </div>
-
-
-        {labels.map((label, index)=> {
-          return <Label key={index} title={label.title} id={label._id} newLabelState = {newLabelState} setNewLabelState={setNewLabelState} getLabels={getLabels} handleDeletionModal={handleDeletionModal} deletionModal={deletionModal}/>
+          </div>
+          {labels.map((label, index)=> {
+          return <Label key={index} labelTitle={label.title} id={label._id} newLabelState = {newLabelState} setNewLabelState={setNewLabelState} handleDeletionModal={handleDeletionModal} deletionModal={deletionModal}/>
         }
         )}
-        
+        </div>
       </div>
   )
 }

@@ -18,7 +18,7 @@ interface Props {
 const Notes: React.FC<Props> = ({ notes }) => {
   console.log('Notes component is rendering with notes:', notes);
 
-  const {currentLabel, loading} = useContext(Context)
+  const {currentLabel} = useContext(Context)
   
   const breakpoints = {
     default: 6,
@@ -34,9 +34,7 @@ const Notes: React.FC<Props> = ({ notes }) => {
   
  
 
-  if (loading) {
-    return <div>Loading...</div>;
-  }
+
 
   return (!notes.plainNotes && !notes.pinnedNotes) || (notes.plainNotes.length === 0 && ["Query", "Trash", "Archive"].includes(currentLabel.title)) ? (
     <div className={`${MainStyles.container}`}>

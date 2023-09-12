@@ -3,21 +3,22 @@
   align-items: center;
   flex-direction: column;
   width: 100%;
-  background-color: red;
-  padding: 3.35rem .5rem 0 3.7rem
+  background-color: rgb(51, 50, 50);
+  padding: 3.35rem .5rem 0 3.7rem;
 }
 
 .noNotes {
   margin-top: 1rem;
 }
+
 .newNote {
+  border: 1px solid rgb(116, 116, 116);
   margin-top: .7em;
   border-radius: 5px;
   max-width: 27em;
   min-width: 15em;
   width: 100%;
   display: flex;
-  background-color: rgb(29, 28, 29);
   transition: all 0.4s ease;
 }
 
@@ -25,19 +26,18 @@
   display: flex;
   flex-direction: column;
   top: 50%;
+  
 }
 
 
-.newNoteInactive {
 
-}
 
 .bodyInput {
   display: flex;
   align-items: center;
   min-height: 2.5rem;
   max-height: 1em;
-  padding: .5rem 0 .5rem .5rem;
+  padding: .5rem .5rem .5rem .5rem;
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   position: relative;
   line-height: 1.5;
@@ -46,6 +46,8 @@
   height: auto;
   resize: none;
   overflow-y:auto;
+  width: 100%;
+
 }
 
 .newNoteActive .bodyInput {
@@ -55,6 +57,6 @@
 
 .titleInput {
   height: 2.5rem;
-  padding: .5rem .5rem .5rem .5rem;
+  padding: .5rem 2.3rem .5rem .5rem;
 }
 

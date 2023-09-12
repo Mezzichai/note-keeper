@@ -1,30 +1,24 @@
-import React, {useRef, useEffect, useState, useContext, useLayoutEffect} from 'react'
+import React, {useRef, useEffect, useState,  useLayoutEffect} from 'react'
 import MainStyles from './MainStyles.module.css'
 import NoteStyles from './NoteStyles.module.css'
 import api from '../../api/axios';
-import { Context } from '../../context/context';
+import { NoteType } from '../../interfaces';
 
-interface Label {
-  _id?: string;
-  title: string;
-}
-interface note {
-  _id: string;
-  title?: string;
-  body?: string;
-  labels: Label[];
-}
+
+
 
 interface Props {
   noteState: boolean;
   setNoteState: React.Dispatch<React.SetStateAction<boolean>>;
-  note: note
+  handleNoteUpdate: (note: NoteType) => void
+  note: NoteType
+  handleDelete: () => Promise<void>
+
 }
 
 
-const NoteModal: React.FC<Props> = ({setNoteState, noteState, note}) => {
+const NoteModal: React.FC<Props> = ({handleDelete, handleNoteUpdate, setNoteState, noteState, note}) => {
 
-  const {setNotes} = useContext(Context)
   const [title, setTitle] = useState<string>(`${note.title}`)
   const [body, setBody] = useState<string>(`${note.body}`)
 
@@ -54,13 +48,6 @@ const NoteModal: React.FC<Props> = ({setNoteState, noteState, note}) => {
     }
   }, [note.body]); // Recalculate height whenever the note body changes
 
-  useLayoutEffect(() => {
-    if (titleInputRef.current) {
-      // Calculate the scroll height of the textarea content
-      const content = titleInputRef.current.scrollHeight;
-      // Set the textarea height to the scroll height
-      titleInputRef.current.style.height = `${Math.min(content, 100)}px`;    }
-  }, [note.title]);
 
 
   const divRef = useRef<HTMLDivElement>(null);
@@ -93,17 +80,14 @@ const NoteModal: React.FC<Props> = ({setNoteState, noteState, note}) => {
       withCredentials: true
     })
     const updatedNote = response.data
-
-    setNotes((prevNotes) => {
-      return {
-        plainNotes: prevNotes.plainNotes.map(prevNote => prevNote._id === updatedNote._id ? updatedNote : prevNote),
-        pinnedNotes: prevNotes.pinnedNotes.map(prevNote => prevNote._id === updatedNote._id ? updatedNote : prevNote),
-      }
-    })
+    handleNoteUpdate(updatedNote)
   }
     
   const handleBlur = async () => {
     console.log("blurring!")
+    if (!title && !body) {
+      handleDelete()
+    }
     if (title !== note.title || body !== note.body) {
       await patchAndUpdateNotes()
     }
@@ -112,24 +96,26 @@ const NoteModal: React.FC<Props> = ({setNoteState, noteState, note}) => {
 
 
   return (
-    <div className={NoteStyles.modal} ref={divRef}>
-      <input 
-        className={MainStyles.titleInput}
-        placeholder='Title'
-        type="text" 
-        value={title}
-        ref={titleInputRef}
-        onChange={(e) => handleTitleChange(e)}
-        // onBlur={() => handleBlur()}
-      />
-      <textarea
-        placeholder='Take a note...'
-        className={NoteStyles.bodyInput}
-        value={body}
-        ref={textareaRef}
-        // onBlur={() => handleBlur()}
-        onChange={(e)=>handleBodyChange(e)}
-      />
+    <div className={NoteStyles.modalContainer}>
+      <div className={NoteStyles.modal} ref={divRef}>
+        <input 
+          className={MainStyles.titleInput}
+          placeholder='Title'
+          type="text" 
+          value={title}
+          ref={titleInputRef}
+          onChange={(e) => handleTitleChange(e)}
+          // onBlur={() => handleBlur()}
+        />
+        <textarea
+          placeholder='Take a note...'
+          className={NoteStyles.bodyInput}
+          value={body}
+          ref={textareaRef}
+          // onBlur={() => handleBlur()}
+          onChange={(e)=>handleBodyChange(e)}
+        />
+      </div>
     </div>
   )
 }
