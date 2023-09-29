@@ -1,60 +1,79 @@
-import React, { useEffect, useState, useContext, useRef } from 'react';
+import React, { useEffect, useState,  } from 'react';
 import headerStyles from "./headerStyles.module.css";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faBars, faMagnifyingGlass, faMapPin, faEllipsisVertical, faArchive, faX, faTrash, faTrashRestore, faUndo } from '@fortawesome/free-solid-svg-icons';
-import api from '../../api/axios';
-import { Context } from '../../context/context';
+import { faBars,faMapPin, faEllipsisVertical, faArchive, faX, faTrash, faTrashRestore, faUndo } from '@fortawesome/free-solid-svg-icons';
 import OptionsModal from '../main/Multiselect-components/OptionsModal';
-import UseUpdateNoteStatus from '../../hooks/HandleTrashAndArchive';
 import { NoteType, notesState } from '../../interfaces';
+import { useLabels } from '../../context/LabelContext';
+import { useNotes } from '../../context/NoteContext';
+import SearchBar from './SearchBar';
 
-interface Props {
-  isOpen: boolean;
-  setIsOpen: React.Dispatch<React.SetStateAction<boolean>>;
-  query: string;
-  setQuery: React.Dispatch<React.SetStateAction<string>>;
-}
 
-const Header: React.FC<Props> = ({ isOpen, setIsOpen, query, setQuery }) => {
-  const {currentLabel, setNotes, setMultiSelectMode, multiSelectMode, selectedNotes, setSelectedNotes, notes, setCurrentLabel} = useContext(Context)
+const Header: React.FC = () => {
+  const {setNotes, notes, setMultiSelectMode, multiSelectMode, selectedNotes, setSelectedNotes} = useNotes()
+  const {setIsOpen, isOpen, currentLabel} = useLabels()
   const [modalState, setModalState] = useState<boolean>(false)
-
-  const inputRef = useRef<HTMLInputElement | null>(null);
-  const handleQuery = async () => {
-    const response = await api.get(`./notes/search/query?query=${query}`)
-    console.log(response)
-    setNotes(() => ({ plainNotes: response.data, pinnedNotes: []}));
-  }
+  const [query, setQuery] = useState<string>("")
 
   useEffect(() => {
     if (query) {
-      setCurrentLabel({title: "Query", _id: "default"})
-      handleQuery()
+    setNotes((prevNotes)=> {
+      const plainNotes = prevNotes.plainNotes.filter(note => {
+        return (note.body && note.body.includes(query)) ||
+        (note.title && note.title.includes(query))
+      })
+    
+      const pinnedNotes = prevNotes.pinnedNotes.filter(note => {
+        return (note.body && note.body.includes(query)) ||
+        (note.title && note.title.includes(query))
+      })
+      
+      return {
+        plainNotes: [...plainNotes],
+        pinnedNotes: [...pinnedNotes],
+      }
+    })
     }
   }, [query])
 
   useEffect(() => {
-    if (query && currentLabel.title !== "Query") {
-      setQuery("")
-    }
-  }, [currentLabel])
-
-  const handleFocusInput = () => {
-    if (inputRef.current) {
-      inputRef.current.focus();
-    }
-  }
-  
-  useEffect(() => {
-    if (selectedNotes.length <= 0) {
-      setMultiSelectMode(false)
+    if (multiSelectMode) {
+      if (selectedNotes.length <= 0) {
+        setMultiSelectMode(false)
+      }
     }
   }, [selectedNotes])
 
+  useEffect(() => {
+    if (multiSelectMode) {
+      setMultiSelectMode(false)
+      setSelectedNotes([])
+    }
+    if (query) {
+      setQuery("")
+    }
+  }, [currentLabel, notes, setMultiSelectMode, setSelectedNotes])
+
+  
   const handleMultiSelectCancel = () => {
     setMultiSelectMode(false)
     setSelectedNotes([])
   }
+
+
+  
+  // useEffect(() => {
+  //   const updateQueryParam = () => {
+  //     const newUrl = `/search/query${query ? `?query=${encodeURIComponent(query)}` : ''}`;
+  //     navigate(newUrl, { replace: true });
+  //   };
+
+  //   // Use a timeout to avoid updating the URL too frequently as the user types
+  //   const timeoutId = setTimeout(updateQueryParam, 500);
+
+  //   return () => clearTimeout(timeoutId);
+  // }, [query, navigate]);
+
 
   const handleArchive = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     try {
@@ -65,21 +84,12 @@ const Header: React.FC<Props> = ({ isOpen, setIsOpen, query, setQuery }) => {
           shouldBeTrashed: false,
           note: note
         }
-        await UseUpdateNoteStatus(updateNoteStatusArgs);
         setNotes((prevNotes: notesState) => {
           return {
             plainNotes: prevNotes.plainNotes.filter((prevNote: NoteType) => prevNote._id !== note._id),
             pinnedNotes: prevNotes.pinnedNotes.filter((prevNote: NoteType) => prevNote._id !== note._id),
           }
         });
-        api.patch(
-          `./notes/${note._id}`,
-          JSON.stringify({ isPinned: false }),
-          {
-            headers: { "Content-Type": "application/json" },
-            withCredentials: true,
-          }
-        );
       })
     } catch (error) {
       console.log(error);
@@ -93,14 +103,9 @@ const Header: React.FC<Props> = ({ isOpen, setIsOpen, query, setQuery }) => {
         selectedNotes.map(async (note) => {
           let updatedNote;
           if (!note.isPinned) {
-             updatedNote = await api.patch(
-              `./notes/${note._id}`,
-              JSON.stringify({ isPinned: true }),
-              {
-                headers: { "Content-Type": "application/json" },
-                withCredentials: true,
-              }
-            );
+             updatedNote = {
+              data: "da"
+             }
           }
           return updatedNote ? updatedNote.data : note;
         })
@@ -193,7 +198,7 @@ const Header: React.FC<Props> = ({ isOpen, setIsOpen, query, setQuery }) => {
     })
   }
 
-
+  
   const handleRestore = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     try {
       selectedNotes.forEach(async (note) => {
@@ -217,35 +222,22 @@ const Header: React.FC<Props> = ({ isOpen, setIsOpen, query, setQuery }) => {
   }
 
 
-  useEffect(() => {
-    setMultiSelectMode(false)
-    setSelectedNotes([])
-  }, [currentLabel, notes, setMultiSelectMode, setSelectedNotes])
 
-  
+
+
   return (
-    
     <header>
       {!multiSelectMode ? (
       <>
         <div className={headerStyles.left}>
-          <button onClick={() => setIsOpen(!isOpen)}>
+          <button onClick={() => setIsOpen(!isOpen)} className={headerStyles.icon}>
             <FontAwesomeIcon icon={faBars} />
           </button>
           <div className={headerStyles.title}>Keeper++</div>
         </div>
 
-        <div 
-          className={headerStyles.center}>
-          <button onClick={() => handleFocusInput()}><FontAwesomeIcon icon={faMagnifyingGlass} /></button>
-          <input 
-            ref={inputRef}
-            placeholder='Search'
-            type="text" 
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-          />
-          <button className={headerStyles.X} onClick={() => setQuery("")}>X</button>
+        <div className={headerStyles.center}>
+          <SearchBar currentLabel={currentLabel} setQuery={setQuery} query={query} />
         </div>
 
         <div className={headerStyles.right}>
@@ -261,9 +253,9 @@ const Header: React.FC<Props> = ({ isOpen, setIsOpen, query, setQuery }) => {
 
           <div className={headerStyles.title}>{selectedNotes.length} selected</div>
         </div>
-        {!["Trash", "Archive"].includes(currentLabel.title) ? (
+        {!["Trash", "Archive"].includes(currentLabel || "") ? (
           <div className={headerStyles.right}>
-            {currentLabel.title !== "Query" ? 
+            {location.pathname !== '/search/query' ? 
               selectedNotes.every(note => note.isPinned === true) ? (
               <button onClick={(e) => handleUnpin(e)} className={`${headerStyles.option} ${headerStyles.removePin} ${headerStyles.noteSelectBtn}`} >
                 <FontAwesomeIcon icon={faMapPin} />
@@ -285,7 +277,7 @@ const Header: React.FC<Props> = ({ isOpen, setIsOpen, query, setQuery }) => {
               <OptionsModal notes={selectedNotes} setOptionsModal={setModalState} isFromHeader={true}/>
             ) : null}
           </div>
-        ) : currentLabel.title === "Trash" ? (
+        ) : currentLabel === "Trash" ? (
           <div className={headerStyles.right}>
             <button onClick={(e) => handleArchive(e)} className={`${headerStyles.option} ${headerStyles.noteSelectBtn}`}>
               <FontAwesomeIcon icon={faArchive} />

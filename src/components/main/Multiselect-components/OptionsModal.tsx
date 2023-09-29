@@ -1,10 +1,8 @@
-import React, {useRef, useEffect, useState, useContext} from 'react'
+import React, {useRef, useEffect, useState} from 'react'
 import optionModalStyles from '../../header/optionModalStyles.module.css'
 import LabelModal from './LabelModal';
-import { Context } from '../../../context/context';
-import UseUpdateNoteStatus from '../../../hooks/HandleTrashAndArchive';
-import {  NoteType, } from '../../../interfaces';
-import api from '../../../api/axios';
+import { useNotes } from '../../../context/NoteContext';
+import { useLabels } from '../../../context/LabelContext';
 
 //there are cases where passing in the handle trash function from the header would not suffice
 //because the same component is being called by indivual notes
@@ -14,13 +12,16 @@ interface Props {
   setOptionsModal: React.Dispatch<React.SetStateAction<boolean>>;
   optionRef?: React.RefObject<HTMLDivElement>
   isFromHeader?: boolean
+  handleTrash: (e: React.MouseEvent) => Promise<void>
 }
 
-const OptionsModal: React.FC<Props> = ({notes, setOptionsModal, isFromHeader}) => {
+const OptionsModal: React.FC<Props> = ({handleTrash, notes, setOptionsModal, isFromHeader}) => {
   
   const modalRef = useRef<HTMLDivElement>(null)
   const [labelModalState, setLabelModal] = useState<boolean>(false)
-  const {setNotes, labels} = useContext(Context)
+  const {setNotes} = useNotes()
+  const {labels} = useLabels()
+
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -37,30 +38,7 @@ const OptionsModal: React.FC<Props> = ({notes, setOptionsModal, isFromHeader}) =
     };  
   }, []);
 
- 
-//stopPropagation is a stupid way to handle this, you should just use a ref here,then 
-// and check if its being click in not compoennt
-const handleTrash = (e: React.MouseEvent<HTMLLIElement, MouseEvent>) => {
-  try {
-    notes.forEach(async (note) => {
-      const updateNoteStatusArgs = {
-        e: e,
-        shouldBeArchived: false,
-        shouldBeTrashed: true,
-        note: note
-      }
-      await UseUpdateNoteStatus(updateNoteStatusArgs);
-      setNotes(prevNotes => {
-        return {
-          plainNotes: prevNotes.plainNotes.filter(prevNote => note._id !== prevNote._id),
-          pinnedNotes: prevNotes.pinnedNotes.filter(prevNote => note._id !== prevNote._id),
-        }
-      });
-    })
-  } catch (error) {
-    console.log(error);
-  }
-}
+
 
   const handleChangeLabels = async (e: React.MouseEvent<HTMLLIElement, MouseEvent>) => {
     e.stopPropagation()
@@ -72,29 +50,24 @@ const handleTrash = (e: React.MouseEvent<HTMLLIElement, MouseEvent>) => {
   const handleCopy = async (e: React.MouseEvent<HTMLLIElement, MouseEvent>) => {
     e.stopPropagation()
     try {
-      const copiedNotes = await Promise.all(
-        notes.map(async (note) => {
-          const copiedNote = await api.post(`./notes/newnote`, 
-            JSON.stringify({
-              title: note.title,
-              body: note.body,
-              isTrashed: false,
-              isArchived: false,
-              isPinned: false,
-              labels: note.labels
-            }),{
-              headers: {"Content-Type": "application/json"},
-              withCredentials: true
-            })
-            console.log(copiedNote)
-          return copiedNote.data
-        })
-      )
+      // const copiedNotes = await Promise.all(
+      //   notes.map(async (note) => {
+      //     const copiedNote = await api.post(`./notes/newnote`, 
+      //       JSON.stringify({
+      //         title: note.title,
+      //         body: note.body,
+      //         isTrashed: false,
+      //         isArchived: false,
+      //         isPinned: false,
+      //         labels: note.labels
+      //       })
+      //   })
+      // )
 
-      setNotes((prevNotes) => ({
-        ...prevNotes,
-        plainNotes: [...prevNotes.plainNotes, ...copiedNotes],
-      }));    
+      // setNotes((prevNotes) => ({
+      //   ...prevNotes,
+      //   plainNotes: [...prevNotes.plainNotes, ...copiedNotes],
+      // }));    
     } catch (error) {
       console.log(error)
     }

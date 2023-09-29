@@ -1,9 +1,8 @@
-import React, {useRef, useEffect, useContext, useState } from 'react'
-import { Context } from '../../../context/context';
+import React, {useRef, useEffect, useState } from 'react'
+import { useLabels } from '../../../context/LabelContext';
 import optionModalStyles from '../../header/optionModalStyles.module.css'
 import { NoteType } from '../../../interfaces';
 import { LabelType } from '../../../interfaces';
-import api from '../../../api/axios';
 
 interface Props {
   setLabelModal: React.Dispatch<React.SetStateAction<boolean>>;
@@ -11,7 +10,7 @@ interface Props {
 }
 
 const LabelModal: React.FC<Props> = ({setLabelModal, note}) => {
-  const {labels} = useContext(Context)
+  const {labels} = useLabels()
   const labelModalRef = useRef<HTMLDivElement>(null)
   const [checkedLabels, setCheckedLabels] = useState<LabelType[]>([...note.labels])
 

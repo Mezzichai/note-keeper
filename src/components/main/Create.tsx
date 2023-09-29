@@ -1,66 +1,45 @@
-import React, {useState, useRef, useEffect, useContext} from 'react'
+import React, {useState, useRef, useEffect} from 'react'
 import MainStyles from './MainStyles.module.css'
-import api from '../../api/axios';
-import { Context } from '../../context/context';
+import { useNotes } from '../../context/NoteContext'
+import { createNote } from '../../utils/notes'
+import { useAsyncFn } from '../../hooks/useAsync'
+import { useParams } from 'react-router'
 
-// interface NoteProps {
-//   _id: string;
-//   title?: string;
-//   body?: string;
-//   label: string;
-
-// }
-
-// interface Props {
-//   notes: NoteProps[]
-// }
 const Create: React.FC = () => {
-
-  
   const [title, setTitle] = useState<string>("")
   const [body, setBody] = useState<string>("")
-  const {currentLabel, setNotes} = useContext(Context)
-
   const [newNoteState, setNewNoteState] = useState<boolean>(false)
+  const { createLocalNote } = useNotes()
+  const createNoteState = useAsyncFn(createNote)
+  const { labelId } = useParams()
 
-  const postNote = async () => {
-    return await api.post(`./notes/newnote`, 
-    JSON.stringify({
-      title: title,
-      body: body,
-      isTrashed: false,
-      isArchived: false,
-      isPinned: false,
-      labels: [currentLabel]
-    }), {
-      headers: {"Content-Type": "application/json"},
-      withCredentials: true
+  const onNotePost = () => {
+    return createNoteState.execute(labelId, title, body)
+    .then(note => {
+      setTitle("")
+      setBody("")
+      createLocalNote(note)
     })
-  } 
+  }
+
 
   const divRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    //this is getting run instantly
     const handleClickOutside = (event: MouseEvent) => {
       if (divRef.current && !divRef.current.contains(event.target as Node)) {
         handleBlur();
       }
     };
-  
     if (newNoteState) {
         document.addEventListener("mousedown", handleClickOutside);
     } 
-   
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-    
   }, [newNoteState, title, body]);
   // PAY A-FUCKING-TTENTION TO THIS. 
   // you need the dependencies to have the most current state
-  
-  
 
   const handleBodyChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setBody(e.target.value)
@@ -68,18 +47,10 @@ const Create: React.FC = () => {
     e.target.style.height = `${e.target.scrollHeight}px`; // Set the new height
   }
 
-
-
-
-
   const handleBlur = async () => {
     if (title || body) {
-      const newNote = await postNote()
-      setNotes((prevNotes) => ({plainNotes: [...prevNotes.plainNotes, newNote.data], pinnedNotes: prevNotes.pinnedNotes}))
-      setTitle("")
-      setBody("")
+      onNotePost()
     }
-   
     setNewNoteState(false)
   }
 
@@ -101,7 +72,7 @@ const Create: React.FC = () => {
           onFocus={() => setNewNoteState(true)}
           value={body}
           onChange={(e)=>handleBodyChange(e)}
-      />
+        />
     </div>
   )
 }

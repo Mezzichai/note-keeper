@@ -1,24 +1,32 @@
-import React, {useContext} from 'react'
+import React from 'react'
 import Create from './Create'
 import Note from './Note';
 import MainStyles from './MainStyles.module.css'
 import Masonry from 'react-masonry-css'
-import { Context } from '../../context/context';
-import { notesState } from '../../interfaces';
+import { useNotes } from '../../context/NoteContext';
+import { useParams } from 'react-router-dom';
 
+const Notes: React.FC = () => {
 
+  const { notes } = useNotes()
+  const { labelId } = useParams()
+  // useEffect(() => {
+  //   if (currentLabel.title !== "Query") {
+  //     const getNotes = async () => {
+  //       try {
+  //         const response = await api.get(`./notes/${id}`);
+  //         setNotes(() => ({ plainNotes: response.data.plainNotes, pinnedNotes: response.data.pinnedNotes }));
+  //         setLoading(false)
+  //     } catch (error) {
+  //         console.error('Error fetching notes:', error);
+  //       }
+  //     };
+  //     getNotes()
+  //   }
+  // }, [currentLabel]);
 
+  // console.log('Notes component is rendering with notes:', notes);
 
-interface Props {
-  notes: notesState
-}
-
-
-
-const Notes: React.FC<Props> = ({ notes }) => {
-  console.log('Notes component is rendering with notes:', notes);
-
-  const {currentLabel} = useContext(Context)
   
   const breakpoints = {
     default: 6,
@@ -29,20 +37,14 @@ const Notes: React.FC<Props> = ({ notes }) => {
     460: 1,
   };
 
-
-  
-  
- 
-
-
-
-  return (!notes.plainNotes && !notes.pinnedNotes) || (notes.plainNotes.length === 0 && ["Query", "Trash", "Archive"].includes(currentLabel.title)) ? (
+  return (!notes.plainNotes && !notes.pinnedNotes) || ((notes.plainNotes.length === 0) && 
+    (["Trash", "Archive"].includes(labelId || ""))) ? (
     <div className={`${MainStyles.container}`}>
       <div className={MainStyles.noNotes}>No notes found!</div>
     </div>
     ) : (
     <div className={MainStyles.container}>
-      {!["Trash", "Archive", "Query"].includes(currentLabel.title) ? (<Create />) : null}
+      {!["Trash", "Archive"].includes(labelId || "") ? (<Create />) : null}
       {/* className={NoteStyles.notesContainer} */}
       <Masonry   
       breakpointCols={breakpoints}
