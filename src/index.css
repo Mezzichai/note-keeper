@@ -15,9 +15,10 @@
 
 a {
   font-weight: 500;
-  color: #5c5ceb;
+  color: #ffffff;
   text-decoration: inherit;
 }
+
 a:hover {
   color: #ffffff;
 }
@@ -50,7 +51,6 @@ button {
   transition: border-color 0.25s;
 }
 button:hover {
-  border-color: #646cff;
 }
 
 input {
@@ -81,6 +81,17 @@ textarea {
 
 
 
+.loading-msg {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 80%;
+  font-size: 2rem;
+}
+
+.error-msg {
+
+}
 
 .my-masonry-grid {
   display: -webkit-box; /* Not needed if autoprefixing */

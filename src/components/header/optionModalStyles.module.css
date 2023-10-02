@@ -27,6 +27,7 @@ li {
 
 li:hover {
   background-color: rgba(195, 209, 207, 0.973);
+  cursor: pointer;
 }
 
 #top {

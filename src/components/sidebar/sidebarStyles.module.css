@@ -40,7 +40,8 @@
   position: relative;
   padding: 0.6em 1em;
   font-size: 1em;
-  
+  color: white;
+  background-color: rgb(105, 102, 102);
 }
 
 .child:hover {
@@ -51,12 +52,12 @@
 .icon {
   min-width: 16px;
   position: absolute;
-  left: 0.74rem
+  left: 0.8rem;
+  color: white;
 }
 
 .open .catagory {
-  color: rgb(255, 255, 255);
-  
+  color: white;
 }
 
 
@@ -68,16 +69,15 @@
   color: transparent;
   transition: all 0.2s ease-in-out;
   max-width: 8rem;
-  
+  color: inherit;
   /* Truncate text with an ellipsis (...) */
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
 }
 
-.activeLabel {
-  background-color: gray;
-
+.child.activeLabel {
+  background-color: rgb(169, 169, 169)
 }
 
 
@@ -100,8 +100,7 @@
 }
 
 .modal {
-  background-color: gray;
-  
+  background-color: rgb(66, 66, 66);
   z-index: 999;
   position: absolute;
   top: 50%;
@@ -133,7 +132,7 @@
   min-height: 1.5rem;
   padding: 0;
   border: none;
-  
+  color: inherit
 }
 
 .modal button:hover {
@@ -144,7 +143,7 @@
   margin: 0 .3rem 0 .3rem;
   width: 100%;
   background-color: transparent;
-  color: black;
+  color: inherit
 
 }
 
@@ -173,7 +172,7 @@
 }
 
 .input {
-  border-bottom: 1px solid black;
+  border-bottom: 1px solid rgb(99, 99, 99);
 
 }
 

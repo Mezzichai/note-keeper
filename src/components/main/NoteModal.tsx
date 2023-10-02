@@ -1,40 +1,36 @@
 import React, {useRef, useEffect, useState,  useLayoutEffect} from 'react'
 import MainStyles from './MainStyles.module.css'
 import NoteStyles from './NoteStyles.module.css'
-import api from '../../api/axios';
 import { NoteType } from '../../interfaces';
-
-
+import { updateNote } from '../../utils/notes';
+import { useAsyncFn } from '../../hooks/useAsync';
+import { useNotes } from '../../context/NoteContext';
 
 
 interface Props {
   noteState: boolean;
   setNoteState: React.Dispatch<React.SetStateAction<boolean>>;
-  handleNoteUpdate: (note: NoteType) => void
   note: NoteType
   handleDelete: () => Promise<void>
-
 }
 
 
-const NoteModal: React.FC<Props> = ({handleDelete, handleNoteUpdate, setNoteState, noteState, note}) => {
+const NoteModal: React.FC<Props> = ({handleDelete, setNoteState, noteState, note}) => {
 
   const [title, setTitle] = useState<string>(`${note.title}`)
   const [body, setBody] = useState<string>(`${note.body}`)
-
+  const { updateLocalNote } = useNotes()
+  const updateNoteState = useAsyncFn(updateNote)
 
   const handleBodyChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setBody(e.target.value)
-
     e.target.style.height = "auto"; // Reset the height to auto
     e.target.style.height = `${e.target.scrollHeight}px`; // Set the new height
   }
 
-
   const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setTitle(e.target.value)
   }
-
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const titleInputRef = useRef<HTMLInputElement>(null);
@@ -55,14 +51,13 @@ const NoteModal: React.FC<Props> = ({handleDelete, handleNoteUpdate, setNoteStat
 
 
   useEffect(() => {
-      const handleClickOutside = (event: MouseEvent) => {
-        setTimeout(()=> {
-          if (divRef.current && !divRef.current.contains(event.target as Node)) {
-            handleBlur();
-          }
-        }, 100)
-      };
-  
+    const handleClickOutside = (event: MouseEvent) => {
+      setTimeout(()=> {
+        if (divRef.current && !divRef.current.contains(event.target as Node)) {
+          handleBlur();
+        }
+      }, 100)
+    };
     if (noteState) {
         document.addEventListener("mousedown", handleClickOutside);
     } 
@@ -72,24 +67,19 @@ const NoteModal: React.FC<Props> = ({handleDelete, handleNoteUpdate, setNoteStat
   }, [title, body]);
 
   
-  const patchAndUpdateNotes = async () => {
-    const response = await api.patch(`./notes/${note._id}`,
-    JSON.stringify({body: body , title: title}),
-    {
-      headers: { "Content-Type": "application/json"},
-      withCredentials: true
+  const handleUpdateNote = async () => {
+    return updateNoteState.execute({title, body, id: note._id})
+    .then(note => {
+      updateLocalNote(note);
     })
-    const updatedNote = response.data
-    handleNoteUpdate(updatedNote)
   }
     
-  const handleBlur = async () => {
-    console.log("blurring!")
+  const handleBlur = () => {
     if (!title && !body) {
       handleDelete()
     }
     if (title !== note.title || body !== note.body) {
-      await patchAndUpdateNotes()
+      handleUpdateNote()
     }
     setNoteState(false)
   }

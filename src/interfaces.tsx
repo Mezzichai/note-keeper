@@ -3,7 +3,6 @@ export interface LabelType {
   title: string;
 }
 
-
 export interface NoteType {
   _id: string;
   title?: string;
@@ -13,7 +12,6 @@ export interface NoteType {
   isTrashed: boolean;
   isArchived: boolean
 }
-
 
 export interface notesState {
   plainNotes: NoteType[]

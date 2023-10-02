@@ -1,22 +1,22 @@
 import React, { useState, useRef, useEffect } from 'react'
-import sidebarStyles from './sidebarStyles.module.css'
+import sidebarStyles from '../sidebarStyles.module.css'
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faPlus, faCheck, faX} from '@fortawesome/free-solid-svg-icons'
-import api from '../../api/axios';
-import Label from './label';
+import ModalLabels from './ModalLabels';
 import DeleteModal from './deleteModal';
-
-import { LabelType } from '../../interfaces';
+import { useLabels } from '../../../context/LabelContext'
+import { useAsyncFn } from '../../../hooks/useAsync';
+import { createLabel } from '../../../utils/labels';
+import { LabelType } from '../../../interfaces';
 
 interface Props {
   setModalState: React.Dispatch<React.SetStateAction<boolean>>;
-  labels: LabelType[];
-  // setLabels: React.Dispatch<React.SetStateAction<Label[]>>;
-  getLabels: () => Promise<void>;
 }
 
-const Modal: React.FC<Props> = ({ labels, getLabels, setModalState}) => {
+const Modal: React.FC<Props> = ({ setModalState}) => {
+  const { labels, createLocalLabel } = useLabels()
+  const createLabelState = useAsyncFn(createLabel)
 
   const [newLabelState, setNewLabelState] = useState<boolean>(false)
   const [newLabel, setNewLabel] = useState<string>("")
@@ -26,14 +26,19 @@ const Modal: React.FC<Props> = ({ labels, getLabels, setModalState}) => {
     id: ""
   })
 
-  const [deletionModal, setDeletionModal] = useState<boolean>(false)
+  const onLabelCreate = async () => {
+    return createLabelState.execute(newLabel)
+    .then((label: LabelType) => {
+     createLocalLabel(label)
+    })
+   }
 
+  const [deletionModal, setDeletionModal] = useState<boolean>(false)
 
   const handleDeletionModal = (title: string, id: string) => {
     setDeletionModalInfo({title: title, id: id})
     setDeletionModal(true)
   }
-
 
   const divRef = useRef<HTMLDivElement>(null);
 
@@ -45,7 +50,6 @@ const Modal: React.FC<Props> = ({ labels, getLabels, setModalState}) => {
         }
       }, 100)
     };
-  
     document.addEventListener("mousedown", handleClickOutside);
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
@@ -53,27 +57,11 @@ const Modal: React.FC<Props> = ({ labels, getLabels, setModalState}) => {
   }, [setModalState]);
 
 
-
-  const handleNewLabel = async () => {
-    try {
-       await api.post("./notes/label", 
-        JSON.stringify({title: newLabel}),
-        {
-          headers: { "Content-Type": "application/json"},
-          withCredentials: true
-        }
-      )
-      getLabels()
-    } catch (error) {
-      console.log(error)
-    }
-  }
-
   return (
       <div className={sidebarStyles.modalContainer}>
         <div className={sidebarStyles.modal} ref={divRef}>
         {deletionModal ? (
-          <DeleteModal getLabels={getLabels} title={deletionModalInfo.title} id={deletionModalInfo.id} setDeletionModal={setDeletionModal}/>
+          <DeleteModal title={deletionModalInfo.title} id={deletionModalInfo.id} setDeletionModal={setDeletionModal}/>
           ) : null
         }
         <div className={sidebarStyles.message}>Edit labels</div>
@@ -90,10 +78,13 @@ const Modal: React.FC<Props> = ({ labels, getLabels, setModalState}) => {
               setNewLabel("") 
             }, 100)}
             />
-          <button className={`${newLabelState ? sidebarStyles.showCheck : null} ${sidebarStyles.confirmLabelBtn}`} onClick={() => handleNewLabel()}><FontAwesomeIcon icon={faCheck}/></button>
+          <button className={`${newLabelState ? sidebarStyles.showCheck : null} ${sidebarStyles.confirmLabelBtn}`} 
+            onClick={() => onLabelCreate()}>
+            <FontAwesomeIcon icon={faCheck}/>
+          </button>
           </div>
           {labels.map((label, index)=> {
-          return <Label key={index} labelTitle={label.title} id={label._id} newLabelState = {newLabelState} setNewLabelState={setNewLabelState} handleDeletionModal={handleDeletionModal} deletionModal={deletionModal}/>
+          return <ModalLabels key={index} label={label} newLabelState = {newLabelState} setNewLabelState={setNewLabelState} handleDeletionModal={handleDeletionModal} deletionModal={deletionModal}/>
         }
         )}
         </div>

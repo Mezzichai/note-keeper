@@ -1,26 +1,30 @@
-import React, {useRef, useEffect, useState, useContext} from 'react'
+import React, {useRef, useEffect, useState} from 'react'
 import optionModalStyles from '../../header/optionModalStyles.module.css'
 import LabelModal from './LabelModal';
-import { Context } from '../../../context/context';
-import UseUpdateNoteStatus from '../../../hooks/HandleTrashAndArchive';
-import {  NoteType, } from '../../../interfaces';
-import api from '../../../api/axios';
-
+import { useLabels } from '../../../context/LabelContext';
+import { NoteType } from '../../../interfaces';
+import { useAsyncFn } from '../../../hooks/useAsync';
+import { createNote, updateNote } from '../../../utils/notes';
+import { useNotes } from '../../../context/NoteContext';
 //there are cases where passing in the handle trash function from the header would not suffice
 //because the same component is being called by indivual notes
 
 interface Props {
   notes: NoteType[];
   setOptionsModal: React.Dispatch<React.SetStateAction<boolean>>;
-  optionRef?: React.RefObject<HTMLDivElement>
-  isFromHeader?: boolean
+  optionRef?: React.RefObject<HTMLDivElement>;
+  isFromHeader?: boolean;
 }
 
 const OptionsModal: React.FC<Props> = ({notes, setOptionsModal, isFromHeader}) => {
   
   const modalRef = useRef<HTMLDivElement>(null)
   const [labelModalState, setLabelModal] = useState<boolean>(false)
-  const {setNotes, labels} = useContext(Context)
+  const {labels} = useLabels()
+  const {createLocalNote, deleteLocalNote} = useNotes()
+  const createNoteState = useAsyncFn(createNote)
+  const updateNoteState = useAsyncFn(updateNote)
+
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -31,36 +35,38 @@ const OptionsModal: React.FC<Props> = ({notes, setOptionsModal, isFromHeader}) =
       }, 100)
     };
     document.addEventListener("mousedown", handleClickOutside);
-
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };  
   }, []);
 
- 
-//stopPropagation is a stupid way to handle this, you should just use a ref here,then 
-// and check if its being click in not compoennt
-const handleTrash = (e: React.MouseEvent<HTMLLIElement, MouseEvent>) => {
-  try {
-    notes.forEach(async (note) => {
-      const updateNoteStatusArgs = {
-        e: e,
-        shouldBeArchived: false,
-        shouldBeTrashed: true,
-        note: note
-      }
-      await UseUpdateNoteStatus(updateNoteStatusArgs);
-      setNotes(prevNotes => {
-        return {
-          plainNotes: prevNotes.plainNotes.filter(prevNote => note._id !== prevNote._id),
-          pinnedNotes: prevNotes.pinnedNotes.filter(prevNote => note._id !== prevNote._id),
-        }
-      });
+  const handleCopy = (e: React.MouseEvent<Element, MouseEvent>) => {
+    e.stopPropagation();
+    if (!Array.isArray(notes)) {
+      notes = [notes]
+    }
+    notes.forEach((note) => {
+      createNoteState.execute(note.labels, note?.title, note?.body)
+      .then(note => {
+        createLocalNote(note)
+      })
     })
-  } catch (error) {
-    console.log(error);
   }
-}
+
+  const handleTrash = (e: React.MouseEvent<Element, MouseEvent>) => {
+    e.stopPropagation()
+    if (!Array.isArray(notes)) {
+      notes = [notes]
+    }
+    notes.forEach((note) => {
+      updateNoteState.execute({title: note.title, body: note.body, id: note._id,
+      options: {isArchived: false,
+        isTrashed: true}
+      }).then(note => {
+        deleteLocalNote(note)
+      })
+    })
+  }
 
   const handleChangeLabels = async (e: React.MouseEvent<HTMLLIElement, MouseEvent>) => {
     e.stopPropagation()
@@ -69,36 +75,6 @@ const handleTrash = (e: React.MouseEvent<HTMLLIElement, MouseEvent>) => {
     }
   }
 
-  const handleCopy = async (e: React.MouseEvent<HTMLLIElement, MouseEvent>) => {
-    e.stopPropagation()
-    try {
-      const copiedNotes = await Promise.all(
-        notes.map(async (note) => {
-          const copiedNote = await api.post(`./notes/newnote`, 
-            JSON.stringify({
-              title: note.title,
-              body: note.body,
-              isTrashed: false,
-              isArchived: false,
-              isPinned: false,
-              labels: note.labels
-            }),{
-              headers: {"Content-Type": "application/json"},
-              withCredentials: true
-            })
-            console.log(copiedNote)
-          return copiedNote.data
-        })
-      )
-
-      setNotes((prevNotes) => ({
-        ...prevNotes,
-        plainNotes: [...prevNotes.plainNotes, ...copiedNotes],
-      }));    
-    } catch (error) {
-      console.log(error)
-    }
-  }
   return (
     <div ref={modalRef} className={!isFromHeader ? optionModalStyles.modal : `${optionModalStyles.modal} ${optionModalStyles.headerModal}`}>
 
