@@ -1,4 +1,4 @@
-import React, {useState, useRef} from 'react'
+import React, {useState, useRef, useEffect} from 'react'
 import sidebarStyles from './sidebarStyles.module.css'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faTrash, faEdit, faArchive, faLightbulb} from '@fortawesome/free-solid-svg-icons'
@@ -7,37 +7,28 @@ import { LabelType } from '../../interfaces';
 import { useLabels } from '../../context/LabelContext';
 import Label from './Label';
 import { Link, useParams } from 'react-router-dom';
-
-
+import { useAsyncFn } from '../../hooks/useAsync';
+import { getLabels } from '../../utils/labels';
 
 
 const Sidebar: React.FC = () => {
   const { labelId } =  useParams()
-  const { labels, isOpen, setCurrentLabel } = useLabels()
+  const { labels, isOpen, setCurrentLabel, setLabels } = useLabels()
+  const getLabelsState = useAsyncFn(getLabels)
+
   const [isHovering, setIsHovering] = useState<boolean>(false)
   const [modalState, setModalState] = useState<boolean>(false)
   const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   
   
-
-
   
-  // const handleNewLabel = async (label: LabelProp) => {
-  //   try {
-  //     const newLabel = await api.post<LabelProp>(
-  //       "./notes/label",
-  //       JSON.stringify(label),
-  //       {
-  //         headers: { "Content-Type": "application/json" },
-  //         withCredentials: true
-  //       }
-  //     );
-  //     setLabels((prevLabels) => [...prevLabels, newLabel.data]);
-  //     console.log(newLabel);
-  //   } catch (error) {
-  //     console.log(error);
-  //   }
-  // };
+  useEffect(() => {
+    getLabelsState.execute()
+    .then(labels => {
+      setLabels(labels)
+    })
+  }, [])
+
 
   const handleHover = () => {
     if (!hoverTimeoutRef.current) {
@@ -59,20 +50,20 @@ const Sidebar: React.FC = () => {
   return (
     <div>
       {modalState ? <Modal setModalState={setModalState}/> : null}
-      
       <div className={`${sidebarStyles.sidebar} ${(isOpen || isHovering) ? sidebarStyles.open : null}`} onMouseOver={()=>handleHover()} onMouseLeave={(e)=>handleUnhover(e)}>
-        <button className={`${sidebarStyles.child} ${
-            labelId === "" ? sidebarStyles.activeLabel : ""
+        <Link to={`/Notes`} onClick={() => setCurrentLabel({title: "Notes", _id: "Notes"})} className={`${sidebarStyles.child} ${
+            labelId === "Notes" ? sidebarStyles.activeLabel : ""
           }`}>
-          <Link to={`/Notes`} onClick={() => setCurrentLabel("Notes")} className={sidebarStyles.catagory}>
+          <div className={sidebarStyles.catagory}>
             <div className={sidebarStyles.icon}><FontAwesomeIcon icon={faLightbulb} /></div>
             <span>
               All Notes
             </span>
-          </Link>
-        </button>
-
-        {labels.map((label: LabelType) => (
+          </div>
+        </Link>
+        
+        {getLabelsState.loading ? null : 
+        labels.map((label: LabelType) => (
           <Label label={label} key={label._id}/>
         ))}
       
@@ -82,26 +73,26 @@ const Sidebar: React.FC = () => {
           Edit Labels
           </span>
         </button>
-        <button className={`${sidebarStyles.child} ${
+        <Link to={`/Archive`} onClick={() => setCurrentLabel({title: "Archive", _id: "Archive"})} className={`${sidebarStyles.child} ${
             labelId === "Archive" ? sidebarStyles.activeLabel : ""
           }`}>
-          <Link to={`/Archive`} onClick={() => setCurrentLabel("Archive")} className={sidebarStyles.catagory}>
+          <div className={sidebarStyles.catagory}>
             <div className={sidebarStyles.icon}><FontAwesomeIcon icon={faArchive} /></div>
             <span>
               Archive
             </span>
-          </Link>
-        </button>
-        <button className={`${sidebarStyles.child} ${
+          </div>
+        </Link>
+        <Link to={`/Trash`} onClick={() => setCurrentLabel({title: "Trash", _id: "Trash"})} className={`${sidebarStyles.child} ${
             labelId === "Trash" ? sidebarStyles.activeLabel : ""
           }`}>
-          <Link to={`/Trash`} onClick={() => setCurrentLabel("Trash")} className={sidebarStyles.catagory}>
+          <div className={sidebarStyles.catagory}>
             <div className={sidebarStyles.icon}><FontAwesomeIcon icon={faTrash} /></div>
             <span>
               Trash
             </span>
-          </Link>
-        </button>
+          </div>
+        </Link>
       </div>
     </div>
   )

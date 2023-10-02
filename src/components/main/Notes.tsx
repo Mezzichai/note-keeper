@@ -1,31 +1,53 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import Create from './Create'
 import Note from './Note';
 import MainStyles from './MainStyles.module.css'
 import Masonry from 'react-masonry-css'
 import { useNotes } from '../../context/NoteContext';
 import { useParams } from 'react-router-dom';
-
+import { useAsyncFn } from '../../hooks/useAsync';
+import { getNotes, getQuery } from '../../utils/notes';
 const Notes: React.FC = () => {
 
-  const { notes } = useNotes()
+  const { notes, setNotes, query, setQuery } = useNotes()
   const { labelId } = useParams()
-  // useEffect(() => {
-  //   if (currentLabel.title !== "Query") {
-  //     const getNotes = async () => {
-  //       try {
-  //         const response = await api.get(`./notes/${id}`);
-  //         setNotes(() => ({ plainNotes: response.data.plainNotes, pinnedNotes: response.data.pinnedNotes }));
-  //         setLoading(false)
-  //     } catch (error) {
-  //         console.error('Error fetching notes:', error);
-  //       }
-  //     };
-  //     getNotes()
-  //   }
-  // }, [currentLabel]);
 
-  // console.log('Notes component is rendering with notes:', notes);
+  const notesFromIdState = useAsyncFn(getNotes)
+  const queryNotesState = useAsyncFn(getQuery)
+
+
+  useEffect(() => {
+    if (query) {
+      setQuery("")
+    }
+  }, [labelId])
+
+
+  useEffect(() => {
+    if (!query) {
+      notesFromIdState.execute(labelId)
+      .then(notes => {
+        setNotes(()=> {
+          return {
+            plainNotes: [...notes.plainNotes],
+            pinnedNotes: [...notes.pinnedNotes],
+          }
+        })
+      })
+    } else {
+      queryNotesState.execute(query, labelId)
+      .then(notes => {
+        setNotes(() => {
+          return {
+            pinnedNotes: [],
+            plainNotes: [...notes],
+          }
+        })
+      })
+    }
+  }, [query, labelId])
+
+
 
   
   const breakpoints = {
@@ -37,7 +59,14 @@ const Notes: React.FC = () => {
     460: 1,
   };
 
-  return (!notes.plainNotes && !notes.pinnedNotes) || ((notes.plainNotes.length === 0) && 
+  return notesFromIdState.loading ? (
+    <div className={MainStyles.container}>
+      <h1 className='loading-msg'>Loading...</h1>
+    </div>
+  ) : notesFromIdState.error ? (
+    <h1 className="error-msg">{notesFromIdState.error.message}</h1>
+  ) : (
+    (!notes.plainNotes && !notes.pinnedNotes) || ((notes.plainNotes.length === 0) && 
     (["Trash", "Archive"].includes(labelId || ""))) ? (
     <div className={`${MainStyles.container}`}>
       <div className={MainStyles.noNotes}>No notes found!</div>
@@ -50,7 +79,6 @@ const Notes: React.FC = () => {
       breakpointCols={breakpoints}
       className="my-masonry-grid"
       columnClassName="my-masonry-grid_column">
-
         {notes.pinnedNotes.map((note) => (
          <Note key={note._id} note={note} />
         ))}
@@ -59,7 +87,7 @@ const Notes: React.FC = () => {
         ))}
       </Masonry>
     </div>
-  )}
+  ))}
 
 
 export default Notes

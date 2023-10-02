@@ -75,7 +75,6 @@ header {
   margin-right: .4rem;
   min-width: 123px;
   justify-content: right;
-
 }
 
 .option {
@@ -89,9 +88,13 @@ header {
   border-radius: 50%;
   padding: 0.6em 1em;
   font-size: 1em;
+  color:inherit
+
 }
 .noteSelectBtn {
   border-radius: 50%;
+  color:inherit
+
 }
 .noteSelectBtn:hover {
   background-color: rgba(0, 0, 0, 0.5);

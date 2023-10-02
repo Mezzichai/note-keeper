@@ -15,9 +15,10 @@
 
 a {
   font-weight: 500;
-  color: #636bc9;
+  color: #ffffff;
   text-decoration: inherit;
 }
+
 a:hover {
   color: #ffffff;
 }
@@ -78,14 +79,19 @@ textarea {
   }
 }
 
+
+
 .loading-msg {
-  
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 80%;
+  font-size: 2rem;
 }
 
 .error-msg {
 
 }
-
 
 .my-masonry-grid {
   display: -webkit-box; /* Not needed if autoprefixing */

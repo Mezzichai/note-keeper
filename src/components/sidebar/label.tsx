@@ -13,19 +13,18 @@ interface Props {
 const Label: React.FC<Props> = ({label}) => {
   const { labelId } = useParams()
   const { setCurrentLabel } = useLabels()
-
   return (
-    <button
+    <Link to={`/${label._id}`} onClick={() => setCurrentLabel({title: label.title, _id: label._id})}
       className={`${sidebarStyles.child} ${
-        labelId === label.title ? sidebarStyles.activeLabel : ""
+        labelId === label._id ? sidebarStyles.activeLabel : ""
     }`}>
-      <Link to={`/${label._id}`} onClick={() => setCurrentLabel(label.title)} className={sidebarStyles.catagory}>
+      <div className={sidebarStyles.catagory}>
         <div className={sidebarStyles.icon}><FontAwesomeIcon icon={faTag} /></div>
         <span>
           {label.title}
         </span>
-      </Link>
-    </button>
+      </div>
+    </Link>
   )
 }
 

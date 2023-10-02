@@ -1,20 +1,9 @@
-import { useCallback, useState, useEffect } from "react";
+import { useCallback, useState } from "react";
 
 // Define a union type of all possible argument structures
 
 type AsyncFunction<T> = (...args: unknown[]) => Promise<T>;
 
-export function useAsync<T>(
-  func: AsyncFunction<T>,
-  dependencies: React.DependencyList = []
-) {
-
-  const { execute, ...state } = useAsyncInternal<T>(func, dependencies, true);
-  useEffect(() => {
-    execute();
-  }, [execute]);
-  return state;
-}
 
 export function useAsyncFn<T>(
   func: AsyncFunction<T>,

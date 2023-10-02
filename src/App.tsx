@@ -8,6 +8,9 @@ import { LabelProvider } from './context/LabelContext';
 import { Routes, Route, useNavigate} from 'react-router-dom'
 
 
+
+
+
 const App: React.FC = () => {
   const navigate = useNavigate();
 
@@ -17,19 +20,19 @@ const App: React.FC = () => {
 
   return (
     <>
-      <AppProvider>
-      <Header />
-        <Routes>
-          <Route path='/:labelId' element={
-              <div className="container">
-                <Sidebar />
-                <NoteProvider>
+      <NoteProvider>
+        <LabelProvider>
+          <Header />
+          <Routes>
+            <Route path='/:labelId' element={
+                <div className="container">
+                  <Sidebar />
                   <Notes/>
-                </NoteProvider>
-              </div>
-          } />
-        </Routes>
-      </AppProvider>
+                </div>
+            } />
+          </Routes>
+        </LabelProvider>
+      </NoteProvider>
     </>
   )
 }

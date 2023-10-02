@@ -17,6 +17,9 @@ interface Label {
 
 const getQuery = async (req: Request, res: Response, next: NextFunction) => {
   const query: string = req.query.query as string
+  const labelId: string = req.query.labelId as string;
+
+
   try {
     const notes: Collection<Note> | undefined = await db.collection("notes")
     const plainNotes = await notes?.find({
@@ -24,6 +27,7 @@ const getQuery = async (req: Request, res: Response, next: NextFunction) => {
         { title: { $regex: query, $options: "i" } }, // Case-insensitive search in the title
         { body: { $regex: query, $options: "i" } },  // Case-insensitive search in the body
       ],
+      labels: { $elemMatch: { _id: labelId} }
     }).limit(50).toArray()
     if (plainNotes) {
       return res.send(plainNotes).status(200)

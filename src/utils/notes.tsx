@@ -1,16 +1,26 @@
 import { LabelType } from "../interfaces";
 import makeRequest from "./makeRequests";
 
+
+
+export function getQuery(query: string, labelId: string) {
+  // Construct the URL with the query and labelId parameters
+  const url = `/notes/search/query?query=${encodeURIComponent(query)}&labelId=${encodeURIComponent(labelId)}`
+  return makeRequest(url);
+}
+
 export function getNotes(labelId: string) {
   return makeRequest(`/notes/${labelId}`)
 }
 
-
-export function createNote(label:LabelType, title?: string, body?: string) {
+export function createNote(labels:LabelType[], title?: string, body?: string) {
+  if (!Array.isArray(labels)) {
+    labels = [labels]
+  }
   const requestData = {
     title,
     body,
-    labels: [label]
+    labels: [...labels]
   };
   return makeRequest(`/notes/newnote`, {
     method: "POST",
@@ -25,16 +35,18 @@ interface noteState {
 }
 
 interface updateNoteArgs {
-  body: string, 
-  title: string,
+  body?: string, 
+  title?: string,
+  labels?: string
   id: string
-  options: noteState
+  options?: noteState
 }
 
-export function updateNote({body, title, id, options}: updateNoteArgs) {
+export function updateNote({id, body, title, labels, options}: updateNoteArgs) {
   const requestData = {
     body,
     title,
+    labels,
     ...options
   };
   return makeRequest(`/notes/${id}`, {

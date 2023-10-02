@@ -4,17 +4,19 @@ import { useNotes } from '../../context/NoteContext'
 import { createNote } from '../../utils/notes'
 import { useAsyncFn } from '../../hooks/useAsync'
 import { useParams } from 'react-router'
+import { useLabels } from '../../context/LabelContext'
 
 const Create: React.FC = () => {
   const [title, setTitle] = useState<string>("")
   const [body, setBody] = useState<string>("")
   const [newNoteState, setNewNoteState] = useState<boolean>(false)
   const { createLocalNote } = useNotes()
+  const {currentLabel} = useLabels()
   const createNoteState = useAsyncFn(createNote)
-  const { labelId } = useParams()
+
 
   const onNotePost = () => {
-    return createNoteState.execute(labelId, title, body)
+    return createNoteState.execute(currentLabel, title, body)
     .then(note => {
       setTitle("")
       setBody("")

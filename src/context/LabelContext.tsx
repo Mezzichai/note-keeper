@@ -1,7 +1,5 @@
-import { createContext, useState, useContext, useEffect } from "react";
+import { createContext, useState, useContext } from "react";
 import { LabelType } from "../interfaces";
-import { getLabels } from "../utils/labels";
-import { useAsync } from "../hooks/useAsync";
 
 
 interface LabelProviderProps {
@@ -13,8 +11,8 @@ interface ContextType {
   setLabels: React.Dispatch<React.SetStateAction<LabelType[]>>;
   isOpen: boolean;
   setIsOpen: React.Dispatch<React.SetStateAction<boolean>>;
-  currentLabel: string;
-  setCurrentLabel: React.Dispatch<React.SetStateAction<string>>;
+  currentLabel: {title: string, _id: string};
+  setCurrentLabel: React.Dispatch<React.SetStateAction<LabelType>>;
   updateLocalLabel: (id: string, newName: string) => void;
   createLocalLabel: (label: LabelType) => void;
   deleteLocalLabel: (id: string) => void;
@@ -27,27 +25,32 @@ const useLabels = () => {
 }
 
 const LabelProvider: React.FC<LabelProviderProps> = ({ children }) => {
-  const { loading, error, data } = useAsync(getLabels)
   const [labels, setLabels] = useState<LabelType[]>([]);
   const [isOpen, setIsOpen] = useState<boolean>(false);
-  const [currentLabel, setCurrentLabel] = useState<string>("Notes")
+  const [currentLabel, setCurrentLabel] = useState<LabelType>({title: "Notes", _id: "Notes"})
 
-  useEffect(() => {
-    if (data) {
-      setLabels(data)
-    }
-  }, [data])
 
-  function updateLocalLabel(id: string, newName: string) {
-    id + newName
+  function updateLocalLabel(id: string, title: string) {
+    setLabels(prevLabels => {
+      return prevLabels.map(label => {
+        if (label._id === id) {
+          return {...label, title: title}
+        }
+        return label
+      })
+    })
   }
 
   function createLocalLabel(label: LabelType) {
-    label
+    setLabels(prevLabels => {
+      return [...prevLabels, label]
+    })
   }
 
   function deleteLocalLabel(id: string) {
-    id
+    setLabels(prevLabels => {
+      return prevLabels.filter(label => label._id !== id)
+    })
   }
 
   const context: ContextType = {
@@ -65,15 +68,7 @@ const LabelProvider: React.FC<LabelProviderProps> = ({ children }) => {
 
   return (
     <LabelContext.Provider value={context}>
-      {loading ? (
-        <h1>Loading</h1>
-      ) : error ? (
-        <h1 className="error-msg">{error.message}</h1> 
-      ) : (
-        <>
-          {children}
-        </>
-      )}
+      {children}
     </LabelContext.Provider>
   );
 };

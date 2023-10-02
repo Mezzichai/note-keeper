@@ -84,7 +84,7 @@ const Modal: React.FC<Props> = ({ setModalState}) => {
           </button>
           </div>
           {labels.map((label, index)=> {
-          return <ModalLabels key={index} labelTitle={label.title} id={label._id} newLabelState = {newLabelState} setNewLabelState={setNewLabelState} handleDeletionModal={handleDeletionModal} deletionModal={deletionModal}/>
+          return <ModalLabels key={index} label={label} newLabelState = {newLabelState} setNewLabelState={setNewLabelState} handleDeletionModal={handleDeletionModal} deletionModal={deletionModal}/>
         }
         )}
         </div>

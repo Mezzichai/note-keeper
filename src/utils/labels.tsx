@@ -1,10 +1,6 @@
 import makeRequest from "./makeRequests";
 
 
-export function getQuery(query: string) {
-  return makeRequest(`/notes/search/query?query=${query}`)
-}
-
 export function getLabels() {
   return makeRequest('/notes/label')
 }

@@ -40,7 +40,8 @@
   position: relative;
   padding: 0.6em 1em;
   font-size: 1em;
-  
+  color: white;
+  background-color: rgb(105, 102, 102);
 }
 
 .child:hover {
@@ -51,12 +52,12 @@
 .icon {
   min-width: 16px;
   position: absolute;
-  left: 0.74rem
+  left: 0.8rem;
+  color: white;
 }
 
 .open .catagory {
-  color: rgb(0, 0, 0);
-  
+  color: white;
 }
 
 
@@ -68,15 +69,15 @@
   color: transparent;
   transition: all 0.2s ease-in-out;
   max-width: 8rem;
-  color:rgb(0, 0, 0);
+  color: inherit;
   /* Truncate text with an ellipsis (...) */
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
 }
 
-.activeLabel {
-  background-color: gray;
+.child.activeLabel {
+  background-color: rgb(169, 169, 169)
 }
 
 

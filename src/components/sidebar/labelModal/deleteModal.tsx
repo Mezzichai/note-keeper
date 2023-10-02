@@ -1,4 +1,4 @@
-import React, {useContext} from 'react'
+import React from 'react'
 import sidebarStyles from '../sidebarStyles.module.css'
 import { LabelType, NoteType } from '../../../interfaces';
 import { useAsyncFn } from '../../../hooks/useAsync';
@@ -6,6 +6,7 @@ import { useLabels } from '../../../context/LabelContext';
 import { useNavigate} from 'react-router-dom';
 import { deleteNote } from '../../../utils/notes';
 import { deleteLabel } from '../../../utils/labels';
+import { useNotes } from '../../../context/NoteContext';
 
 interface Props {
   title: string;
@@ -17,7 +18,7 @@ interface Props {
 
 
 const DeleteModal: React.FC<Props> = ({title, id, setDeletionModal}) => {
-  const {notes} = useContext(Context)
+  const { notes } = useNotes()
   const { deleteLocalLabel } = useLabels()
   const deleteLabelState = useAsyncFn(deleteLabel)
   const deleteNoteState = useAsyncFn(deleteNote)
@@ -44,7 +45,7 @@ const DeleteModal: React.FC<Props> = ({title, id, setDeletionModal}) => {
       deleteLocalLabel(label._id)
       deleteNotesWithNoLabels(label._id)
       setDeletionModal(false)
-      navigate("/")
+      navigate("/Notes")
     })
   }
  

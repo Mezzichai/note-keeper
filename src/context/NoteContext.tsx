@@ -1,8 +1,5 @@
-import { createContext, useEffect, useState, useContext } from "react";
+import { createContext, useState, useContext } from "react";
 import { NoteType,  notesState } from "../interfaces";
-import { getNotes } from "../utils/notes";
-import { useAsync } from "../hooks/useAsync";
-import { useParams } from "react-router-dom";
 
 interface NoteProviderProps {
   children: React.ReactNode;
@@ -16,9 +13,12 @@ interface ContextType {
   setSelectedNotes: React.Dispatch<React.SetStateAction<NoteType[]>>;
   multiSelectMode: boolean;
   setMultiSelectMode: React.Dispatch<React.SetStateAction<boolean>>;
+  query: string;
+  setQuery: React.Dispatch<React.SetStateAction<string>>;
   updateLocalNote: (note: NoteType) => void;
   createLocalNote: (note: NoteType) => void;
   deleteLocalNote: (note: NoteType) => void
+  updateLocalNoteLabels: (note: NoteType) => void;
 }
 
 const NoteContext = createContext({} as ContextType);
@@ -34,22 +34,7 @@ const NoteProvider: React.FC<NoteProviderProps> = ({ children }) => {
   });
   const [multiSelectMode, setMultiSelectMode] = useState<boolean>(false);
   const [selectedNotes, setSelectedNotes] = useState<NoteType[]>([]);
-
-  const { labelId } = useParams()
-  
-  const notesFromIdState = useAsync(() => getNotes(labelId), [labelId])
-
-
-  useEffect(()=> {
-    if (notesFromIdState?.data?.plainNotes) {
-      setNotes(()=> {
-        return {
-          plainNotes: [...notesFromIdState.data.plainNotes],
-          pinnedNotes: [...notesFromIdState.data.pinnedNotes],
-        }
-      })
-    }
-  }, [labelId, notesFromIdState?.data])
+  const [query, setQuery] = useState<string>("")
 
 
   function updateLocalNote(note: NoteType) {
@@ -65,6 +50,28 @@ const NoteProvider: React.FC<NoteProviderProps> = ({ children }) => {
         return {
           plainNotes: [note, ...prevNotes.plainNotes],
           pinnedNotes: newPinnedNotes,
+        }
+      }
+    })
+  }
+
+  function updateLocalNoteLabels(note: NoteType) {
+    setNotes(prevNotes => {
+      if (note.isPinned) {
+        const newPinnedNotes = prevNotes.pinnedNotes.map(prevNote => {
+          return prevNote._id !== note._id ? prevNote : note
+        })
+        return {
+          ...prevNotes,
+          pinnedNotes: newPinnedNotes,
+        }
+      } else {
+        const newPlainNotes = prevNotes.plainNotes.map(prevNote => {
+          return prevNote._id !== note._id ? prevNote : note
+        })
+        return {
+          ...prevNotes,
+          plainNotes: newPlainNotes,
         }
       }
     })
@@ -104,22 +111,17 @@ const NoteProvider: React.FC<NoteProviderProps> = ({ children }) => {
     setSelectedNotes,
     multiSelectMode,
     setMultiSelectMode,
+    query,
+    setQuery,
     updateLocalNote,
     createLocalNote,
-    deleteLocalNote
+    deleteLocalNote,
+    updateLocalNoteLabels,
   };
 
   return (
     <NoteContext.Provider value={context}>
-     {notesFromIdState.loading ? (
-        <h1>Loading</h1>
-      ) : notesFromIdState.error ? (
-        <h1 className="error-msg">{notesFromIdState.error.message}</h1> 
-      ) : (
-        <>
-          {children}
-        </>
-      )}
+      {children}
     </NoteContext.Provider>
   );
 };
